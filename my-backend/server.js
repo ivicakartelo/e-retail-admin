@@ -45,17 +45,7 @@ app.post('/departments', (req, res) => {
     });
 });
 
-/*
-app.post('/posts', (req, res) => {
-    const { title, content } = req.body;
-    db.query('INSERT INTO posts (title, content) VALUES (?, ?)', [title, content], (error, results) => {
-        if (error) {
-            return res.status(500).json({ error });
-        }
-        res.status(201).json({ id: results.insertId, title, content });
-    });
-});
-*/
+
 app.put('/departments/:id', (req, res) => {
     const { id } = req.params;
     const { name, description } = req.body;
