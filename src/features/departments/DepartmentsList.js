@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchDepartments } from './departmentsSlice';
+import { fetchDepartments, handleDelete  } from './departmentsSlice';
 import { UpdateDepartmentForm } from './UpdateDepartmentForm'
 
 const DepartmentExcerpt = ({ department }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [updateId, setUpdateId] = useState('')
-  
+  const dispatch = useDispatch()
 
   const handleUpdate = (id) => {
       setUpdateId(id);
@@ -30,8 +30,7 @@ const DepartmentExcerpt = ({ department }) => {
                   Update
               </button>
           )}
-          
-          
+          <button onClick={() => dispatch(handleDelete(department.department_id))}>Delete</button>
           
       </article>
   )
