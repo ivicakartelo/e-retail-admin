@@ -73,17 +73,20 @@ app.delete('/departments/:id', (req, res) => {
 });
 
 // Categories Routes
-app.get('/api/categories', (req, res) => {
+app.get('/categories', (req, res) => {
     db.query('SELECT * FROM category', (error, results) => {
         if (error) return res.status(500).json({ error });
+        console.log(results);
         res.status(200).json(results);
     });
 });
 
-app.post('/api/categories', (req, res) => {
+app.post('/categories', (req, res) => {  // Corrected route definition
     const { department_id, name, description } = req.body;
+    console.log(req.body)
     db.query('INSERT INTO category (department_id, name, description) VALUES (?, ?, ?)', [department_id, name, description], (error, results) => {
         if (error) return res.status(500).json({ error });
+        console.log(results)
         res.status(201).json({ category_id: results.insertId, department_id, name, description });
     });
 });

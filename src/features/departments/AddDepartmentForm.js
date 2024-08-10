@@ -9,8 +9,8 @@ export const AddDepartmentForm = () => {
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
 
-  const canSave = Boolean(name) && Boolean(addRequestStatus === 'idle');
-
+  const canSave = Boolean(name) && Boolean(description) && Boolean(addRequestStatus === 'idle');
+  
   const onSaveDepartmentClicked = async () => {
     if (canSave) {
       try {

@@ -8,12 +8,15 @@ const initialState = {
 };
 
 export const fetchCategories = createAsyncThunk('categories/fetchCategories', async () => {
-  const response = await axios.get('/api/categories'); // Adjust the API endpoint
+  const response = await axios.get('http://localhost:5000/categories'); // Adjust the API endpoint
+  console.log(response.data)
   return response.data;
 });
 
 export const addNewCategory = createAsyncThunk('categories/addNewCategory', async (newCategory) => {
-  const response = await axios.post('/api/categories', newCategory);
+  console.log(newCategory)
+  const response = await axios.post('http://localhost:5000/categories', newCategory);
+  console.log(response.data)
   return response.data;
 });
 
@@ -35,6 +38,7 @@ const categoriesSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(addNewCategory.fulfilled, (state, action) => {
+        console.log(action.payload)
         state.categories.push(action.payload);
       });
   },
