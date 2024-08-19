@@ -1,7 +1,41 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchCategories } from './categoriesSlice';
+import { fetchCategories, handleDelete  } from './categoriesSlice';
 import { AddCategoryForm } from './AddCategoryForm';
+import { UpdateCategoryForm } from './UpdateCategoryForm'
+
+const CategoryExcerpt = ({ category }) => {
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [updateId, setUpdateId] = useState('')
+  const dispatch = useDispatch()
+
+  const handleUpdate = (id) => {
+      setUpdateId(id);
+      console.log(id)
+      setShowEditForm(true);
+    }
+    
+  return (
+      <article key={category.category_id}>
+          <h1>{category.category_id}</h1>
+          <h3>{category.name}</h3>
+          <p>{category.description}</p>
+
+          {showEditForm && updateId === category.category_id ? (
+              <UpdateCategoryForm
+                  category={category}
+                  setShowEditForm={setShowEditForm}
+              />
+              ) : (
+              <button onClick={() => handleUpdate(category.category_id)}>
+                  Update
+              </button>
+          )}
+          <button onClick={() => dispatch(handleDelete(category.category_id))}>Delete</button>
+          
+      </article>
+  )
+}
 
 export const CategoriesList = () => {
   const dispatch = useDispatch();
@@ -15,26 +49,20 @@ export const CategoriesList = () => {
     }
   }, [status, dispatch]);
 
-  let content;
-  if (status === 'loading') {
-    content = <div>Loading...</div>;
-  } else if (status === 'succeeded') {
-    content = (
-      <ul>
-        {categories.map((category) => (
-          <li key={category.category_id}>{category.name}</li>
-        ))}
-      </ul>
-    );
-  } else if (status === 'failed') {
-    content = <div>{error}</div>;
-  }
-
+  let content
+    
+status === 'loading' ? (
+    content = <h1>Loading...</h1>
+) : status === 'succeeded' ? (
+    content = categories.map(category => <CategoryExcerpt key={category.category_id} category={category} />)
+) : (
+    content = <div>Error: {error}</div>
+)
   return (
-    <div>
+    <section>
       <h2>Categories</h2>
       <AddCategoryForm />
       {content}
-    </div>
+    </section>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchDepartments, handleDelete  } from './departmentsSlice';
+import { AddDepartmentForm } from './AddDepartmentForm';
 import { UpdateDepartmentForm } from './UpdateDepartmentForm'
 
 const DepartmentExcerpt = ({ department }) => {
@@ -60,7 +61,7 @@ status === 'loading' ? (
   return (
     <section>
       <h2>Departments</h2>
-      
+      <AddDepartmentForm />
       {content}
     </section>
   );

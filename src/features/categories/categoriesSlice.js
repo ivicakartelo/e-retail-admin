@@ -20,6 +20,19 @@ export const addNewCategory = createAsyncThunk('categories/addNewCategory', asyn
   return response.data;
 });
 
+export const handleDelete = createAsyncThunk('categories/handleDelete', async (id) => {
+  await axios.delete(`http://localhost:5000/departments/${id}`);
+  console.log(id)
+  return { id };
+});
+
+export const updateCategory = createAsyncThunk('departments/updateDepartment', async ({ id, name, description }) => {
+  console.log(id, name, description)
+  await axios.put(`http://localhost:5000/departments/${id}`, { name, description });
+  console.log(id, name, description)
+  return { id, name, description };
+});
+
 const categoriesSlice = createSlice({
   name: 'categories',
   initialState,
@@ -40,6 +53,10 @@ const categoriesSlice = createSlice({
       .addCase(addNewCategory.fulfilled, (state, action) => {
         console.log(action.payload)
         state.categories.push(action.payload);
+      })
+      .addCase(handleDelete.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.categories = state.categories.filter((category) => category.category_id !== action.payload.id);
       });
   },
 });
