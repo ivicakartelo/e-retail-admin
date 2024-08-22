@@ -19,12 +19,19 @@ export const addNewCategory = createAsyncThunk('categories/addNewCategory', asyn
   console.log(response.data)
   return response.data;
 });
-
+/*
 export const handleDelete = createAsyncThunk('categories/handleDelete', async (id) => {
-  await axios.delete(`http://localhost:5000/departments/${id}`);
+  await axios.delete(`http://localhost:5000/categories/${id}`);
   console.log(id)
   return { id };
 });
+*/
+export const handleDelete = createAsyncThunk('categories/handleDelete', async (id) => {
+  await axios.delete(`http://localhost:5000/categories/${id}`);
+  console.log(id)
+  return { id };
+});
+
 
 export const updateCategory = createAsyncThunk('departments/updateDepartment', async ({ id, name, description }) => {
   console.log(id, name, description)

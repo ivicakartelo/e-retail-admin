@@ -14,10 +14,15 @@ const CategoryExcerpt = ({ category }) => {
       console.log(id)
       setShowEditForm(true);
     }
+
+    const onDeleteClick = (id) => {
+      console.log(`Deleting category with ID: ${id}`); // Verify correct ID here
+      dispatch(handleDelete(id));
+    };
     
   return (
       <article key={category.category_id}>
-          <h1>{category.category_id}</h1>
+          <h3>{category.category_id}</h3>
           <h3>{category.name}</h3>
           <p>{category.description}</p>
 
@@ -31,7 +36,7 @@ const CategoryExcerpt = ({ category }) => {
                   Update
               </button>
           )}
-          <button onClick={() => dispatch(handleDelete(category.category_id))}>Delete</button>
+          <button onClick={() => onDeleteClick(category.category_id)}>Delete</button>
           
       </article>
   )

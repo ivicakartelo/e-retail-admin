@@ -91,14 +91,13 @@ app.post('/categories', (req, res) => {  // Corrected route definition
     });
 });
 
-app.delete('/api/categories/:id', (req, res) => {
+app.delete('/categories/:id', (req, res) => {
     const { id } = req.params;
     db.query('DELETE FROM category WHERE category_id = ?', [id], (error, results) => {
         if (error) return res.status(500).json({ error });
         res.status(204).end();
     });
 });
-
 // Articles Routes
 app.get('/api/articles', (req, res) => {
     db.query('SELECT * FROM article', (error, results) => {
