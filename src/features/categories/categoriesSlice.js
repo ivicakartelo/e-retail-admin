@@ -33,12 +33,19 @@ export const handleDelete = createAsyncThunk('categories/handleDelete', async (i
 });
 
 
-export const updateCategory = createAsyncThunk('departments/updateDepartment', async ({ id, name, description }) => {
-  console.log(id, name, description)
-  await axios.put(`http://localhost:5000/categories/${id}`, { name, description });
-  console.log(id, name, description)
-  return { id, name, description };
-});
+export const updateCategory = createAsyncThunk(
+  'categories/updateCategory',
+  async ({ id, department_id, name, description }) => {
+    console.log(id, department_id, name, description);
+    const response = await axios.put(`http://localhost:5000/categories/${id}`, {
+      department_id,
+      name,
+      description,
+    });
+    console.log(response.data);
+    return response.data;
+  }
+);
 
 const categoriesSlice = createSlice({
   name: 'categories',
@@ -64,6 +71,16 @@ const categoriesSlice = createSlice({
       .addCase(handleDelete.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.categories = state.categories.filter((category) => category.category_id !== action.payload.id);
+      })
+      .addCase(updateCategory.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        const { id, department_id, name, description } = action.payload;
+        const existingCategory = state.categories.find((category) => category.category_id === id);
+        if (existingCategory) {
+          existingCategory.department_id = department_id;  // Update department_id
+          existingCategory.name = name;
+          existingCategory.description = description;
+        }
       });
   },
 });
