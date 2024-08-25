@@ -8,12 +8,12 @@ const initialState = {
 };
 
 export const fetchArticles = createAsyncThunk('articles/fetchArticles', async () => {
-  const response = await axios.get('/api/articles'); // Adjust the API endpoint
+  const response = await axios.get('/http://localhost:5000/articles'); // Adjust the API endpoint
   return response.data;
 });
 
 export const addNewArticle = createAsyncThunk('articles/addNewArticle', async (newArticle) => {
-  const response = await axios.post('/api/articles', newArticle);
+  const response = await axios.post('/http://localhost:5000/articles', newArticle);
   return response.data;
 });
 

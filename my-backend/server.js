@@ -98,15 +98,44 @@ app.delete('/categories/:id', (req, res) => {
         res.status(204).end();
     });
 });
+
+app.put('/categories/:id', (req, res) => {
+    const { id } = req.params;
+    const { department_id, name, description } = req.body;
+
+    // Validate required fields
+    if (!department_id || !name || !description) {
+        console.error('Missing required fields: department_id, name, or description');
+        return res.status(400).json({ error: 'Department ID, name, and description are required.' });
+    }
+
+    db.query(
+        'UPDATE category SET department_id = ?, name = ?, description = ? WHERE category_id = ?',
+        [department_id, name, description, id],
+        (error, results) => {
+            if (error) {
+                console.error('Database error:', error);
+                return res.status(500).json({ error });
+            }
+            if (results.affectedRows === 0) {
+                console.error('Category not found or no changes made');
+                return res.status(404).json({ error: 'Category not found or no changes made.' });
+            }
+            res.status(200).json({ id, department_id, name, description });
+            console.log(`Category updated: ${name}`);
+        }
+    );
+});
+
 // Articles Routes
-app.get('/api/articles', (req, res) => {
+app.get('/articles', (req, res) => {
     db.query('SELECT * FROM article', (error, results) => {
         if (error) return res.status(500).json({ error });
         res.status(200).json(results);
     });
 });
 
-app.post('/api/articles', (req, res) => {
+app.post('/articles', (req, res) => {
     const { name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level } = req.body;
     db.query('INSERT INTO article (name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level) VALUES (?, ?, ?, ?, ?, ?)', [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level], (error, results) => {
         if (error) return res.status(500).json({ error });
@@ -114,10 +143,41 @@ app.post('/api/articles', (req, res) => {
     });
 });
 
-app.delete('/api/articles/:id', (req, res) => {
+app.delete('/articles/:id', (req, res) => {
     const { id } = req.params;
     db.query('DELETE FROM article WHERE article_id = ?', [id], (error, results) => {
         if (error) return res.status(500).json({ error });
         res.status(204).end();
     });
+});
+app.put('/articles/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, description } = req.body;
+
+    // Validate the required fields
+    if (!name || !description) {
+        console.error('Missing required fields: name or description');
+        return res.status(400).json({ error: 'Name and description are required.' });
+    }
+
+    // Update the article in the database
+    db.query(
+        'UPDATE articles SET name = ?, description = ? WHERE article_id = ?',
+        [name, description, id],
+        (error, results) => {
+            if (error) {
+                console.error('Database error:', error);
+                return res.status(500).json({ error });
+            }
+
+            // Check if the article was actually updated
+            if (results.affectedRows === 0) {
+                console.error('Article not found or no changes made');
+                return res.status(404).json({ error: 'Article not found or no changes made.' });
+            }
+
+            res.status(200).json({ id, name, description });
+            console.log(`Article updated: ${name}`);
+        }
+    );
 });
