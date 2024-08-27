@@ -36,14 +36,14 @@ export const handleDelete = createAsyncThunk('categories/handleDelete', async (i
 export const updateCategory = createAsyncThunk(
   'categories/updateCategory',
   async ({ id, department_id, name, description }) => {
-    console.log(id, department_id, name, description);
     const response = await axios.put(`http://localhost:5000/categories/${id}`, {
       department_id,
       name,
       description,
     });
-    console.log(response.data);
-    return response.data;
+    return { id, department_id, name, description };  // Adjust according to the API response structure
+    //console.log(response.data)
+    //return response.data
   }
 );
 
@@ -90,22 +90,14 @@ const categoriesSlice = createSlice({
       })
       */
       .addCase(updateCategory.fulfilled, (state, action) => {
-        state.status = 'succeeded';
         const { id, department_id, name, description } = action.payload;
-        console.log(id, department_id, name, description)
-        console.log(action.payload)
-        console.log(id)      
-        const existingCategory = state.categories.find((category) => category.category_id === id);
         console.log(state.categories)
+        const existingCategory = state.categories.find((category) => category.category_id === id);
         console.log(existingCategory)
         if (existingCategory) {
-          console.log(existingCategory)
           existingCategory.department_id = department_id;
           existingCategory.name = name;
-          console.log(existingCategory.name)
-          console.log(existingCategory.name)
           existingCategory.description = description;
-          console.log(existingCategory.description)
         }
       });
   },

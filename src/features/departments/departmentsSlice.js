@@ -62,6 +62,8 @@ const departmentsSlice = createSlice({
         console.log(id, name, description)
         console.log(action.payload)
         const existingDepartment = state.departments.find((department) => department.department_id === id);
+        console.log(existingDepartment)
+        console.log(state.departments)
         if (existingDepartment) {
           existingDepartment.name = name;
           console.log(existingDepartment.name)
