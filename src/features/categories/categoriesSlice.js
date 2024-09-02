@@ -36,7 +36,7 @@ export const handleDelete = createAsyncThunk('categories/handleDelete', async (i
 export const updateCategory = createAsyncThunk(
   'categories/updateCategory',
   async ({ id, department_id, name, description }) => {
-    const response = await axios.put(`http://localhost:5000/categories/${id}`, {
+    await axios.put(`http://localhost:5000/categories/${id}`, {
       department_id,
       name,
       description,

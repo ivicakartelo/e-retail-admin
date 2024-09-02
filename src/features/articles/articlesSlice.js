@@ -7,14 +7,35 @@ const initialState = {
   error: null,
 };
 
+// Async thunk to fetch all articles
 export const fetchArticles = createAsyncThunk('articles/fetchArticles', async () => {
-  const response = await axios.get('/http://localhost:5000/articles'); // Adjust the API endpoint
+  const response = await axios.get('http://localhost:5000/articles');
   return response.data;
 });
 
+// Async thunk to add a new article
 export const addNewArticle = createAsyncThunk('articles/addNewArticle', async (newArticle) => {
-  const response = await axios.post('/http://localhost:5000/articles', newArticle);
+  const response = await axios.post('http://localhost:5000/articles', newArticle);
   return response.data;
+});
+
+// Async thunk to delete an article by ID
+export const handleDelete = createAsyncThunk('articles/handleDelete', async (id) => {
+  await axios.delete(`http://localhost:5000/articles/${id}`);
+  return { id };
+});
+
+// Async thunk to update an article by ID
+export const updateArticle = createAsyncThunk('articles/updateArticle', async ({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level }) => {
+  await axios.put(`http://localhost:5000/articles/${id}`, {
+    name, 
+    description, 
+    image_1, 
+    image_2, 
+    promotion_at_homepage_level, 
+    promotion_at_department_level 
+  });
+  return { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level };
 });
 
 const articlesSlice = createSlice({
@@ -36,6 +57,21 @@ const articlesSlice = createSlice({
       })
       .addCase(addNewArticle.fulfilled, (state, action) => {
         state.articles.push(action.payload);
+      })
+      .addCase(handleDelete.fulfilled, (state, action) => {
+        state.articles = state.articles.filter((article) => article.article_id !== action.payload.id);
+      })
+      .addCase(updateArticle.fulfilled, (state, action) => {
+        const { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level } = action.payload;
+        const existingArticle = state.articles.find((article) => article.article_id === id);
+        if (existingArticle) {
+          existingArticle.name = name;
+          existingArticle.description = description;
+          existingArticle.image_1 = image_1;
+          existingArticle.image_2 = image_2;
+          existingArticle.promotion_at_homepage_level = promotion_at_homepage_level;
+          existingArticle.promotion_at_department_level = promotion_at_department_level;
+        }
       });
   },
 });

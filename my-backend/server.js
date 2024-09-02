@@ -154,49 +154,54 @@ app.get('/articles', (req, res) => {
     });
 });
 
+// Create a new article
 app.post('/articles', (req, res) => {
     const { name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level } = req.body;
-    db.query('INSERT INTO article (name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level) VALUES (?, ?, ?, ?, ?, ?)', [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level], (error, results) => {
-        if (error) return res.status(500).json({ error });
-        res.status(201).json({ article_id: results.insertId, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level });
-    });
+    db.query(
+        'INSERT INTO article (name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level) VALUES (?, ?, ?, ?, ?, ?)',
+        [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level],
+        (error, results) => {
+            if (error) return res.status(500).json({ error });
+            res.status(201).json({ article_id: results.insertId, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level });
+        }
+    );
 });
 
-app.delete('/articles/:id', (req, res) => {
-    const { id } = req.params;
-    db.query('DELETE FROM article WHERE article_id = ?', [id], (error, results) => {
-        if (error) return res.status(500).json({ error });
-        res.status(204).end();
-    });
-});
+// Update an existing article
 app.put('/articles/:id', (req, res) => {
     const { id } = req.params;
-    const { name, description } = req.body;
+    const { name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level } = req.body;
 
-    // Validate the required fields
     if (!name || !description) {
         console.error('Missing required fields: name or description');
         return res.status(400).json({ error: 'Name and description are required.' });
     }
 
-    // Update the article in the database
     db.query(
-        'UPDATE articles SET name = ?, description = ? WHERE article_id = ?',
-        [name, description, id],
+        'UPDATE article SET name = ?, description = ?, image_1 = ?, image_2 = ?, promotion_at_homepage_level = ?, promotion_at_department_level = ? WHERE article_id = ?',
+        [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, id],
         (error, results) => {
             if (error) {
                 console.error('Database error:', error);
                 return res.status(500).json({ error });
             }
 
-            // Check if the article was actually updated
             if (results.affectedRows === 0) {
                 console.error('Article not found or no changes made');
                 return res.status(404).json({ error: 'Article not found or no changes made.' });
             }
 
-            res.status(200).json({ id, name, description });
+            res.status(200).json({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level });
             console.log(`Article updated: ${name}`);
         }
     );
+});
+
+// Delete an article
+app.delete('/articles/:id', (req, res) => {
+    const { id } = req.params;
+    db.query('DELETE FROM article WHERE article_id = ?', [id], (error, results) => {
+        if (error) return res.status(500).json({ error });
+        res.status(204).end();
+    });
 });
