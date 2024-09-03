@@ -1,0 +1,76 @@
+.departments-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.departments-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.department-card {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.department-card h3 {
+  margin-top: 0;
+}
+
+.department-card p {
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+.button-update,
+.button-delete {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.button-update {
+  background-color: #3498db;
+  color: #fff;
+  margin-right: 10px;
+}
+
+.button-update:hover {
+  background-color: #2980b9;
+}
+
+.button-delete {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.button-delete:hover {
+  background-color: #c0392b;
+}
+
+.loading-message {
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+}
+
+.error-message {
+  text-align: center;
+  color: #e74c3c;
+  font-size: 16px;
+  margin-top: 20px;
+}

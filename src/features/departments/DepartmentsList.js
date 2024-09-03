@@ -1,41 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchDepartments, handleDelete  } from './departmentsSlice';
+import { fetchDepartments, handleDelete } from './departmentsSlice';
 import { AddDepartmentForm } from './AddDepartmentForm';
-import { UpdateDepartmentForm } from './UpdateDepartmentForm'
+import { UpdateDepartmentForm } from './UpdateDepartmentForm';
+import './DepartmentsList.css';
 
 const DepartmentExcerpt = ({ department }) => {
   const [showEditForm, setShowEditForm] = useState(false);
-  const [updateId, setUpdateId] = useState('')
-  const dispatch = useDispatch()
+  const [updateId, setUpdateId] = useState('');
+  const dispatch = useDispatch();
 
   const handleUpdate = (id) => {
-      setUpdateId(id);
-      console.log(id)
-      setShowEditForm(true);
-    }
-    
-  return (
-      <article key={department.department_id}>
-          <h1>{department.department_id}</h1>
-          <h3>{department.name}</h3>
-          <p>{department.description}</p>
+    setUpdateId(id);
+    setShowEditForm(true);
+  };
 
-          {showEditForm && updateId === department.department_id ? (
-              <UpdateDepartmentForm
-                  department={department}
-                  setShowEditForm={setShowEditForm}
-              />
-              ) : (
-              <button onClick={() => handleUpdate(department.department_id)}>
-                  Update
-              </button>
-          )}
-          <button onClick={() => dispatch(handleDelete(department.department_id))}>Delete</button>
-          
-      </article>
-  )
-}
+  return (
+    <div className="department-card">
+      <h3>{department.name}</h3>
+      <p>{department.description}</p>
+      
+      {showEditForm && updateId === department.department_id ? (
+        <UpdateDepartmentForm department={department} setShowEditForm={setShowEditForm} />
+      ) : (
+        <>
+          <button className="button-update" onClick={() => handleUpdate(department.department_id)}>
+            Update
+          </button>
+          <button className="button-delete" onClick={() => dispatch(handleDelete(department.department_id))}>
+            Delete
+          </button>
+        </>
+      )}
+    </div>
+  );
+};
 
 export const DepartmentsList = () => {
   const dispatch = useDispatch();
@@ -49,20 +48,23 @@ export const DepartmentsList = () => {
     }
   }, [status, dispatch]);
 
-  let content
-    
-status === 'loading' ? (
-    content = <h1>Loading...</h1>
-) : status === 'succeeded' ? (
-    content = departments.map(department => <DepartmentExcerpt key={department.department_id} department={department} />)
-) : (
-    content = <div>Error: {error}</div>
-)
+  let content;
+
+  if (status === 'loading') {
+    content = <h2 className="loading-message">Loading departments...</h2>;
+  } else if (status === 'succeeded') {
+    content = departments.map((department) => (
+      <DepartmentExcerpt key={department.department_id} department={department} />
+    ));
+  } else if (status === 'failed') {
+    content = <div className="error-message">Error: {error}</div>;
+  }
+
   return (
-    <section>
+    <section className="departments-container">
       <h2>Departments</h2>
       <AddDepartmentForm />
-      {content}
+      <div className="departments-list">{content}</div>
     </section>
   );
 };
