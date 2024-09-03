@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { updateArticle } from './articlesSlice';
+// UpdateArticleForm.js
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { updateArticle } from './articlesSlice';
+import './UpdateArticleForm.css'; // Import the CSS file
 
 export const UpdateArticleForm = ({ article, setShowEditForm }) => {
   const [name, setName] = useState(article.name);
@@ -31,7 +33,7 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
   };
 
   return (
-    <form onSubmit={onUpdateArticleClicked}>
+    <form className="update-article-form" onSubmit={onUpdateArticleClicked}>
       <label htmlFor="articleNameEdit">Name</label>
       <input  
         id="articleNameEdit"
@@ -90,10 +92,10 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
         <option value="0">No</option>
       </select>
 
-      <button type="submit" disabled={!canSave}>
+      <button type="submit" className="button-update" disabled={!canSave}>
         Update
       </button>
-      <button type="button" onClick={() => setShowEditForm(false)}>
+      <button type="button" className="button-cancel" onClick={() => setShowEditForm(false)}>
         Cancel
       </button>
     </form>

@@ -1,46 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchCategories, handleDelete  } from './categoriesSlice';
+import { fetchCategories, handleDelete } from './categoriesSlice';
 import { AddCategoryForm } from './AddCategoryForm';
-import { UpdateCategoryForm } from './UpdateCategoryForm'
+import { UpdateCategoryForm } from './UpdateCategoryForm';
+import './CategoriesList.css'; // Make sure to include the CSS file
 
 const CategoryExcerpt = ({ category }) => {
   const [showEditForm, setShowEditForm] = useState(false);
-  const [updateId, setUpdateId] = useState('')
-  const dispatch = useDispatch()
+  const [updateId, setUpdateId] = useState('');
+  const dispatch = useDispatch();
 
   const handleUpdate = (id) => {
-      setUpdateId(id);
-      console.log(id)
-      setShowEditForm(true);
-    }
+    setUpdateId(id);
+    setShowEditForm(true);
+  };
 
-    const onDeleteClick = (id) => {
-      console.log(`Deleting category with ID: ${id}`); // Verify correct ID here
-      dispatch(handleDelete(id));
-    };
-    
+  const onDeleteClick = (id) => {
+    dispatch(handleDelete(id));
+  };
+
   return (
-      <article key={category.category_id}>
-          <h3>{category.category_id}</h3>
-          <h3>{category.name}</h3>
-          <p>{category.description}</p>
+    <article className="category-card">
+      <h3>{category.name}</h3>
+      <p>{category.description}</p>
 
-          {showEditForm && updateId === category.category_id ? (
-              <UpdateCategoryForm
-                  category={category}
-                  setShowEditForm={setShowEditForm}
-              />
-              ) : (
-              <button onClick={() => handleUpdate(category.category_id)}>
-                  Update
-              </button>
-          )}
-          <button onClick={() => onDeleteClick(category.category_id)}>Delete</button>
-          
-      </article>
-  )
-}
+      {showEditForm && updateId === category.category_id ? (
+        <UpdateCategoryForm
+          category={category}
+          setShowEditForm={setShowEditForm}
+        />
+      ) : (
+        <div className="category-actions">
+          <button className="button-update" onClick={() => handleUpdate(category.category_id)}>
+            Update
+          </button>
+          <button className="button-delete" onClick={() => onDeleteClick(category.category_id)}>
+            Delete
+          </button>
+        </div>
+      )}
+    </article>
+  );
+};
 
 export const CategoriesList = () => {
   const dispatch = useDispatch();
@@ -54,20 +55,21 @@ export const CategoriesList = () => {
     }
   }, [status, dispatch]);
 
-  let content
-    
-status === 'loading' ? (
-    content = <h1>Loading...</h1>
-) : status === 'succeeded' ? (
-    content = categories.map(category => <CategoryExcerpt key={category.category_id} category={category} />)
-) : (
-    content = <div>Error: {error}</div>
-)
+  let content;
+
+  if (status === 'loading') {
+    content = <h1 className="loading-message">Loading categories...</h1>;
+  } else if (status === 'succeeded') {
+    content = categories.map(category => <CategoryExcerpt key={category.category_id} category={category} />);
+  } else if (status === 'failed') {
+    content = <div className="error-message">Error: {error}</div>;
+  }
+
   return (
-    <section>
+    <section className="categories-list-container">
       <h2>Categories</h2>
       <AddCategoryForm />
-      {content}
+      <div className="categories-list">{content}</div>
     </section>
   );
 };

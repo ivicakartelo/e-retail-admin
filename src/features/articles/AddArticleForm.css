@@ -1,0 +1,70 @@
+/* AddArticleForm.css */
+
+/* Form container styling */
+.add-article-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: auto;
+  }
+  
+  /* Form heading */
+  .add-article-form h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  /* Label styling */
+  .add-article-form label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #555;
+  }
+  
+  /* Input and textarea styling */
+  .add-article-form input,
+  .add-article-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .add-article-form textarea {
+    height: 100px;
+  }
+  
+  /* Button styling */
+  .button-save {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    background-color: #3498db;
+    color: #fff;
+  }
+  
+  .button-save:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+  }
+  
+  /* Button hover effect */
+  .button-save:hover:not(:disabled) {
+    background-color: #2980b9;
+  }
+  
+  /* Error message styling */
+  .form-error {
+    color: #e74c3c;
+    margin-bottom: 15px;
+    font-size: 16px;
+  }
+  

@@ -3,16 +3,22 @@
   display: flex;
   flex-direction: row;
   height: 100vh;
+  background: #f4f4f4; /* Background color for the container */
+  position: relative; /* Ensure the container wraps the content correctly */
 }
 
 /* Sidebar styles */
 .sidebar {
-  background-color: #2c3e50;
+  background-color: #2c3e50; /* Sidebar background color */
   color: white;
   width: 250px;
   padding: 20px;
   transition: transform 0.3s ease-in-out;
-  position: relative; /* Ensure sidebar is correctly positioned relative to its container */
+  position: fixed; /* Fix the sidebar to the left side */
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100; /* Ensure the sidebar is above other content */
 }
 
 /* Sidebar heading */
@@ -45,9 +51,22 @@
 
 /* Main content styles */
 .main-content {
-  flex-grow: 1;
+  margin-left: 250px; /* Ensure content does not overlap with the sidebar */
   padding: 20px;
   transition: margin-left 0.3s ease-in-out; /* Smooth transition when sidebar opens/closes */
+  background: #f4f4f4; /* Background color for main content */
+  min-height: 100vh; /* Ensure content area fills viewport height */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+/* AddDepartmentForm and DepartmentsList styles */
+.add-department-form,
+.departments-list {
+  background: #fff; /* White background for form and list */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px; /* Add margin for spacing */
 }
 
 /* Toggle sidebar button for mobile */
@@ -62,7 +81,7 @@
   padding: 10px;
   font-size: 20px;
   cursor: pointer;
-  z-index: 10;
+  z-index: 200; /* Ensure the button is above other content */
 }
 
 /* Mobile styles */
@@ -76,9 +95,10 @@
     top: 0;
     left: 0;
     height: 100%;
-    width: 250px; /* Ensure sidebar width is fixed */
+    width: 250px;
     transform: translateX(-100%);
-    z-index: 5; /* Ensure it overlays the main content */
+    z-index: 100;
+    background: #2c3e50; /* Retain sidebar background on mobile */
   }
 
   .sidebar.open {
@@ -90,7 +110,15 @@
   }
 
   .main-content {
-    margin-left: 0; /* Ensure content is not pushed by sidebar */
-    padding-top: 60px; /* Adjust if needed to account for the toggle button */
+    margin-left: 0; /* Reset margin for mobile view */
+    padding-top: 60px; /* Ensure padding for the toggle button */
+    background: #f4f4f4; /* Background color for main content */
+  }
+
+  .add-department-form,
+  .departments-list {
+    width: 100%; /* Ensure full width on mobile */
+    padding: 10px; /* Adjust padding for mobile */
+    box-sizing: border-box; /* Ensure padding is included in width */
   }
 }
