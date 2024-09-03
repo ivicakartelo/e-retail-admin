@@ -1,56 +1,96 @@
+/* General styles */
 .admin-container {
   display: flex;
+  flex-direction: row;
   height: 100vh;
-  font-family: Arial, sans-serif;
 }
 
+/* Sidebar styles */
 .sidebar {
-  width: 250px;
   background-color: #2c3e50;
   color: white;
+  width: 250px;
   padding: 20px;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+  position: relative; /* Ensure sidebar is correctly positioned relative to its container */
 }
 
+/* Sidebar heading */
 .sidebar h2 {
-  text-align: center;
+  font-size: 20px;
   margin-bottom: 20px;
-  font-size: 24px;
 }
 
+/* Sidebar menu list */
 .sidebar ul {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
+  margin: 0;
 }
 
+/* Sidebar menu items */
 .sidebar ul li {
-  padding: 10px 15px;
-  margin-bottom: 10px;
+  padding: 10px 0;
   cursor: pointer;
-  font-size: 18px;
-  border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
 
-.sidebar ul li.active,
+.sidebar ul li.active {
+  background-color: #3498db;
+}
+
 .sidebar ul li:hover {
   background-color: #34495e;
 }
 
+/* Main content styles */
 .main-content {
   flex-grow: 1;
   padding: 20px;
-  background-color: #ecf0f1;
-  overflow-y: auto;
+  transition: margin-left 0.3s ease-in-out; /* Smooth transition when sidebar opens/closes */
 }
 
-.main-content h1 {
-  font-size: 28px;
-  margin-bottom: 20px;
+/* Toggle sidebar button for mobile */
+.toggle-sidebar {
+  display: none;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 10;
 }
 
-.main-content .content-area {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+/* Mobile styles */
+@media (max-width: 768px) {
+  .admin-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 250px; /* Ensure sidebar width is fixed */
+    transform: translateX(-100%);
+    z-index: 5; /* Ensure it overlays the main content */
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .toggle-sidebar {
+    display: block;
+  }
+
+  .main-content {
+    margin-left: 0; /* Ensure content is not pushed by sidebar */
+    padding-top: 60px; /* Adjust if needed to account for the toggle button */
+  }
 }

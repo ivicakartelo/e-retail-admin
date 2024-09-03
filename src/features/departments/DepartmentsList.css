@@ -1,21 +1,26 @@
+/* Container for the departments list */
 .departments-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
+  width: 90%; /* Ensure it fits well on mobile screens */
 }
 
+/* Title styling */
 h2 {
   text-align: center;
   margin-bottom: 20px;
   font-size: 24px;
 }
 
+/* Grid layout for the department cards */
 .departments-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
 }
 
+/* Department card styling */
 .department-card {
   background-color: #fff;
   padding: 15px;
@@ -24,16 +29,19 @@ h2 {
   position: relative;
 }
 
+/* Card heading styling */
 .department-card h3 {
   margin-top: 0;
 }
 
+/* Card paragraph styling */
 .department-card p {
   margin-bottom: 15px;
   font-size: 14px;
   color: #666;
 }
 
+/* Button styling */
 .button-update,
 .button-delete {
   padding: 8px 12px;
@@ -43,6 +51,7 @@ h2 {
   font-size: 14px;
 }
 
+/* Update button styling */
 .button-update {
   background-color: #3498db;
   color: #fff;
@@ -53,6 +62,7 @@ h2 {
   background-color: #2980b9;
 }
 
+/* Delete button styling */
 .button-delete {
   background-color: #e74c3c;
   color: #fff;
@@ -62,15 +72,54 @@ h2 {
   background-color: #c0392b;
 }
 
+/* Loading message styling */
 .loading-message {
   text-align: center;
   font-size: 18px;
   color: #666;
 }
 
+/* Error message styling */
 .error-message {
   text-align: center;
   color: #e74c3c;
   font-size: 16px;
   margin-top: 20px;
+}
+
+/* Mobile-first adjustments */
+@media (max-width: 600px) {
+  /* Ensure container takes full width on mobile */
+  .departments-container {
+    width: 100%;
+    padding: 10px;
+  }
+
+  /* Adjust title size for smaller screens */
+  h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  /* Grid layout adjustments for smaller screens */
+  .departments-list {
+    grid-template-columns: 1fr; /* Single column layout on mobile */
+  }
+
+  /* Adjust card padding for mobile */
+  .department-card {
+    padding: 10px;
+  }
+
+  /* Adjust button styles for smaller screens */
+  .button-update,
+  .button-delete {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  /* Adjust paragraph font size for mobile */
+  .department-card p {
+    font-size: 12px;
+  }
 }

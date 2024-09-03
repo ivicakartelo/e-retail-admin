@@ -6,6 +6,7 @@ import './App.css';
 
 const App = () => {
     const [activeTab, setActiveTab] = useState('Departments');
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const renderContent = () => {
         switch (activeTab) {
@@ -22,7 +23,13 @@ const App = () => {
 
     return (
         <div className="admin-container">
-            <nav className="sidebar">
+            {/* Toggle button for mobile view */}
+            <button className="toggle-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}>
+                ☰
+            </button>
+
+            {/* Conditional rendering for sidebar based on screen size */}
+            <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <h2>Admin Panel</h2>
                 <ul>
                     <li onClick={() => setActiveTab('Departments')} className={activeTab === 'Departments' ? 'active' : ''}>Departments</li>
