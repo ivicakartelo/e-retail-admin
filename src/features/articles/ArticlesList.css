@@ -1,64 +1,77 @@
-/* ArticlesList.css */
-
+/* Container for the articles list */
 .articles-list {
-    padding: 20px;
+  display: grid; /* Enable grid layout */
+  grid-template-columns: 1fr 1fr; /* Force two columns per row */
+  gap: 20px; /* Space between grid items */
+  padding: 20px;
+}
+
+/* Individual article excerpt styling */
+.article-excerpt {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Article heading styling */
+.article-excerpt h2 {
+  margin-top: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+/* Article images styling */
+.article-images {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.article-images img {
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* Article actions styling */
+.article-actions {
+  margin-top: 10px;
+}
+
+/* Button styling */
+.button-update,
+.button-delete {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.button-update {
+  background-color: #3498db;
+  color: #fff;
+  margin-right: 10px;
+}
+
+.button-delete {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+/* Error message styling */
+.error-message {
+  color: #e74c3c;
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+/* Mobile-first adjustments */
+@media (max-width: 600px) {
+  /* Ensure full width on mobile */
+  .articles-list {
+      grid-template-columns: 1fr; /* Single column layout on mobile */
   }
-  
-  .article-excerpt {
-    background-color: #fff;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .article-excerpt h2 {
-    margin-top: 0;
-    font-size: 24px;
-    color: #333;
-  }
-  
-  .article-images {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-  
-  .article-images img {
-    max-width: 100px;
-    max-height: 100px;
-    object-fit: cover;
-    border-radius: 4px;
-  }
-  
-  .article-actions {
-    margin-top: 10px;
-  }
-  
-  .button-update {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-right: 10px;
-    background-color: #3498db;
-    color: #fff;
-  }
-  
-  .button-delete {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #e74c3c;
-    color: #fff;
-  }
-  
-  .error-message {
-    color: #e74c3c;
-    font-size: 18px;
-    margin-top: 20px;
-  }
-  
+}
