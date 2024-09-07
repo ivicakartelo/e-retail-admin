@@ -8,6 +8,14 @@ const App = () => {
     const [activeTab, setActiveTab] = useState('Departments');
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    const handleTabClick = (tabName) => {
+        setActiveTab(tabName);
+        // Close sidebar after clicking an option on mobile view
+        if (window.innerWidth <= 768) {
+            setSidebarOpen(false);
+        }
+    };
+
     const renderContent = () => {
         switch (activeTab) {
             case 'Departments':
@@ -32,9 +40,24 @@ const App = () => {
             <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <h2>Admin Panel</h2>
                 <ul>
-                    <li onClick={() => setActiveTab('Departments')} className={activeTab === 'Departments' ? 'active' : ''}>Departments</li>
-                    <li onClick={() => setActiveTab('Categories')} className={activeTab === 'Categories' ? 'active' : ''}>Categories</li>
-                    <li onClick={() => setActiveTab('Articles')} className={activeTab === 'Articles' ? 'active' : ''}>Articles</li>
+                    <li
+                        onClick={() => handleTabClick('Departments')}
+                        className={activeTab === 'Departments' ? 'active' : ''}
+                    >
+                        Departments
+                    </li>
+                    <li
+                        onClick={() => handleTabClick('Categories')}
+                        className={activeTab === 'Categories' ? 'active' : ''}
+                    >
+                        Categories
+                    </li>
+                    <li
+                        onClick={() => handleTabClick('Articles')}
+                        className={activeTab === 'Articles' ? 'active' : ''}
+                    >
+                        Articles
+                    </li>
                 </ul>
             </nav>
             <div className="main-content">
