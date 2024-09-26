@@ -1,40 +1,40 @@
 /* General styles */
+body {
+  font-family: 'Arial', sans-serif; /* Set sans-serif font family for the body */
+}
+
 .admin-container {
   display: flex;
   flex-direction: row;
   height: 100vh;
-  background: #f4f4f4; /* Background color for the container */
-  position: relative; /* Ensure the container wraps the content correctly */
+  background: #f4f4f4;
+  position: relative;
 }
 
-/* Sidebar styles */
 .sidebar {
-  background-color: #2c3e50; /* Sidebar background color */
+  background-color: #2c3e50;
   color: white;
   width: 250px;
   padding: 20px;
   transition: transform 0.3s ease-in-out;
-  position: fixed; /* Fix the sidebar to the left side */
+  position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
-  z-index: 100; /* Ensure the sidebar is above other content */
+  z-index: 100;
 }
 
-/* Sidebar heading */
 .sidebar h2 {
   font-size: 20px;
   margin-bottom: 20px;
 }
 
-/* Sidebar menu list */
 .sidebar ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-/* Sidebar menu items */
 .sidebar ul li {
   padding: 10px 0;
   cursor: pointer;
@@ -49,27 +49,15 @@
   background-color: #34495e;
 }
 
-/* Main content styles */
 .main-content {
-  margin-left: 250px; /* Ensure content does not overlap with the sidebar */
+  margin-left: 250px;
   padding: 20px;
-  transition: margin-left 0.3s ease-in-out; /* Smooth transition when sidebar opens/closes */
-  background: #f4f4f4; /* Background color for main content */
-  min-height: 100vh; /* Ensure content area fills viewport height */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  transition: margin-left 0.3s ease-in-out;
+  background: #f4f4f4;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-/* AddDepartmentForm and DepartmentsList styles */
-.add-department-form,
-.departments-list {
-  background: #fff; /* White background for form and list */
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px; /* Add margin for spacing */
-}
-
-/* Toggle sidebar button for mobile */
 .toggle-sidebar {
   display: none;
   position: fixed;
@@ -81,10 +69,9 @@
   padding: 10px;
   font-size: 20px;
   cursor: pointer;
-  z-index: 200; /* Ensure the button is above other content */
+  z-index: 200;
 }
 
-/* Mobile styles */
 @media (max-width: 768px) {
   .admin-container {
     flex-direction: column;
@@ -98,7 +85,6 @@
     width: 250px;
     transform: translateX(-100%);
     z-index: 100;
-    background: #2c3e50; /* Retain sidebar background on mobile */
   }
 
   .sidebar.open {
@@ -110,15 +96,7 @@
   }
 
   .main-content {
-    margin-left: 0; /* Reset margin for mobile view */
-    padding-top: 60px; /* Ensure padding for the toggle button */
-    background: #f4f4f4; /* Background color for main content */
-  }
-
-  .add-department-form,
-  .departments-list {
-    width: 100%; /* Ensure full width on mobile */
-    padding: 10px; /* Adjust padding for mobile */
-    box-sizing: border-box; /* Ensure padding is included in width */
+    margin-left: 0;
+    padding-top: 60px;
   }
 }

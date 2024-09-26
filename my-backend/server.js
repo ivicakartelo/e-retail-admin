@@ -118,34 +118,6 @@ app.put('/categories/:id', (req, res) => {
     });
 });
 
-/*
-app.put('/categories/:id', (req, res) => {
-    const { id } = req.params;
-    const { department_id, name, description } = req.body;
-
-    // Validate required fields
-    if (!department_id || !name || !description) {
-        console.error('Missing required fields: department_id, name, or description');
-        return res.status(400).json({ error: 'Department ID, name, and description are required.' });
-    }
-    db.query(
-        'UPDATE category SET department_id = ?, name = ?, description = ? WHERE category_id = ?',
-        [department_id, name, description, id],
-        (error, results) => {
-            if (error) {
-                console.error('Database error:', error);
-                return res.status(500).json({ error });
-            }
-            if (results.affectedRows === 0) {
-                console.error('Category not found or no changes made');
-                return res.status(404).json({ error: 'Category not found or no changes made.' });
-            }
-            res.status(200).json({ id, department_id, name, description });
-            console.log(`Category updated: ${name}`);
-        }
-    );
-});
-*/
 // Articles Routes
 app.get('/articles', (req, res) => {
     db.query('SELECT * FROM article', (error, results) => {
