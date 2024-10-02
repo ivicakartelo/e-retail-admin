@@ -28,9 +28,9 @@ const ArticleExcerpt = ({ article }) => {
       <p><strong>ID:</strong> {article.article_id}</p>
       <p>{article.description}</p>
       <div className="article-images">
-        {article.image_1 && <img src={article.image_1} alt={`${article.name} image 1`} />}
-        {article.image_2 && <img src={article.image_2} alt={`${article.name} image 2`} />}
-      </div>
+      {article.image_1 && <p>{article.image_1}</p>}
+      {article.image_2 && <p>{article.image_2}</p>}
+</div>
       <p><strong>Promoted on Homepage:</strong> {article.promotion_at_homepage_level === '1' ? 'Yes' : 'No'}</p>
       <p><strong>Promoted in Department:</strong> {article.promotion_at_department_level === '1' ? 'Yes' : 'No'}</p>
 

@@ -7,7 +7,7 @@ import { AddDepartmentForm } from './AddDepartmentForm';
 import { UpdateDepartmentForm } from './UpdateDepartmentForm';
 import './DepartmentsList.css';
 
-const DepartmentExcerpt = ({ department, onDelete }) => {
+const DepartmentExcerpt = ({ department, handleDeleteDepartment }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false); // State to show/hide AddCategoryForm
 
@@ -31,7 +31,7 @@ const DepartmentExcerpt = ({ department, onDelete }) => {
           <button className="button-update" onClick={handleUpdate}>
             Update
           </button>
-          <button className="button-delete" onClick={() => onDelete(department.department_id)}>
+          <button className="button-delete" onClick={() => handleDeleteDepartment(department.department_id)}>
             Delete
           </button>
           <button className="button-add-category" onClick={handleAddCategory}>
@@ -76,7 +76,7 @@ export const DepartmentsList = () => {
       <DepartmentExcerpt 
         key={department.department_id} 
         department={department} 
-        onDelete={handleDeleteDepartment} // Pass the delete handler
+        handleDeleteDepartment={handleDeleteDepartment} // Pass the delete handler
       />
     ));
   } else if (status === 'failed') {

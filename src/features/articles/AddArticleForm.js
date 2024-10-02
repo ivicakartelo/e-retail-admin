@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addNewArticle } from './articlesSlice';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { addNewArticle } from './articlesSlice'; // Assuming this is your articles slice
+import { fetchCategories } from '../categories/categoriesSlice'; // Assuming fetchCategories is in categoriesSlice.js
 import './AddArticleForm.css'; // Import CSS for styling
 
 export const AddArticleForm = () => {
@@ -10,9 +11,16 @@ export const AddArticleForm = () => {
   const [image2, setImage2] = useState('');
   const [promotionAtHomepageLevel, setPromotionAtHomepageLevel] = useState('');
   const [promotionAtDepartmentLevel, setPromotionAtDepartmentLevel] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]); // State to handle selected categories
   const [addRequestStatus, setAddRequestStatus] = useState('idle');
   const [error, setError] = useState(null);
+
   const dispatch = useDispatch();
+  const categories = useSelector((state) => state.categories.categories); // Get categories from the Redux store
+
+  useEffect(() => {
+    dispatch(fetchCategories()); // Fetch categories when the form loads
+  }, [dispatch]);
 
   const canSave = Boolean(name) && Boolean(description) && addRequestStatus === 'idle';
 
@@ -27,7 +35,8 @@ export const AddArticleForm = () => {
           image_1: image1,
           image_2: image2,
           promotion_at_homepage_level: promotionAtHomepageLevel,
-          promotion_at_department_level: promotionAtDepartmentLevel
+          promotion_at_department_level: promotionAtDepartmentLevel,
+          categoryIds: selectedCategories, // Add selected categories to the article
         })).unwrap();
         setName('');
         setDescription('');
@@ -35,6 +44,7 @@ export const AddArticleForm = () => {
         setImage2('');
         setPromotionAtHomepageLevel('');
         setPromotionAtDepartmentLevel('');
+        setSelectedCategories([]); // Reset the selected categories
         setError(null);
       } catch (err) {
         console.error('Failed to save the article: ', err);
@@ -43,8 +53,15 @@ export const AddArticleForm = () => {
         setAddRequestStatus('idle');
       }
     } else {
-      setError('Please fill out all fields');
+      setError('Please fill out all required fields');
     }
+  };
+
+  const handleCategoryChange = (e) => {
+    const value = parseInt(e.target.value);
+    setSelectedCategories((prev) =>
+      prev.includes(value) ? prev.filter((id) => id !== value) : [...prev, value]
+    );
   };
 
   return (
@@ -107,6 +124,21 @@ export const AddArticleForm = () => {
         onChange={(e) => setPromotionAtDepartmentLevel(e.target.value)}
         placeholder="Enter department promotion level"
       />
+
+      <label>Select Categories:</label>
+      <div className="categories-list">
+        {categories.map((category) => (
+          <div key={category.category_id}>
+            <input
+              type="checkbox"
+              value={category.category_id}
+              onChange={handleCategoryChange}
+              checked={selectedCategories.includes(category.category_id)}
+            />
+            {category.name}
+          </div>
+        ))}
+      </div>
 
       <div className="form-actions">
         <button type="submit" className="button-save" disabled={!canSave}>
