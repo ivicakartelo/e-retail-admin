@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addNewArticle } from './articlesSlice'; // Assuming this is your articles slice
-import { fetchCategories } from '../categories/categoriesSlice'; // Assuming fetchCategories is in categoriesSlice.js
+import { addNewArticle } from './articlesSlice'; // Action to add a new article
+import { fetchCategories } from '../categories/categoriesSlice'; // Action to fetch categories
+import { fetchArticles } from './articlesSlice'; // Action to fetch articles after adding a new one
 import './AddArticleForm.css'; // Import CSS for styling
 
 export const AddArticleForm = () => {
@@ -11,40 +12,53 @@ export const AddArticleForm = () => {
   const [image2, setImage2] = useState('');
   const [promotionAtHomepageLevel, setPromotionAtHomepageLevel] = useState('');
   const [promotionAtDepartmentLevel, setPromotionAtDepartmentLevel] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState([]); // State to handle selected categories
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState([]); // For multiple categories
   const [addRequestStatus, setAddRequestStatus] = useState('idle');
   const [error, setError] = useState(null);
 
   const dispatch = useDispatch();
-  const categories = useSelector((state) => state.categories.categories); // Get categories from the Redux store
+  const categories = useSelector((state) => state.categories.categories); // Fetch categories from Redux store
+  const categoryStatus = useSelector((state) => state.categories.status);
 
   useEffect(() => {
-    dispatch(fetchCategories()); // Fetch categories when the form loads
-  }, [dispatch]);
+    if (categoryStatus === 'idle') {
+      dispatch(fetchCategories()); // Fetch categories when form loads
+    }
+  }, [categoryStatus, dispatch]);
 
-  const canSave = Boolean(name) && Boolean(description) && addRequestStatus === 'idle';
+  const canSave = Boolean(name) && Boolean(description) && selectedCategoryIds.length > 0 && addRequestStatus === 'idle';
 
   const onSaveArticleClicked = async (e) => {
     e.preventDefault();
     if (canSave) {
       try {
         setAddRequestStatus('pending');
-        await dispatch(addNewArticle({
+        
+        // Create a new article object
+        const newArticle = {
           name,
           description,
           image_1: image1,
           image_2: image2,
           promotion_at_homepage_level: promotionAtHomepageLevel,
           promotion_at_department_level: promotionAtDepartmentLevel,
-          categoryIds: selectedCategories, // Add selected categories to the article
-        })).unwrap();
+          category_ids: selectedCategoryIds, // Send an array of category IDs
+        };
+
+        // Dispatch the action to add the new article
+        await dispatch(addNewArticle(newArticle)).unwrap();
+
+        // Fetch the updated list of articles after adding the new article
+        dispatch(fetchArticles());
+
+        // Clear form fields after successful submission
         setName('');
         setDescription('');
         setImage1('');
         setImage2('');
         setPromotionAtHomepageLevel('');
         setPromotionAtDepartmentLevel('');
-        setSelectedCategories([]); // Reset the selected categories
+        setSelectedCategoryIds([]); // Clear the selected categories
         setError(null);
       } catch (err) {
         console.error('Failed to save the article: ', err);
@@ -57,11 +71,16 @@ export const AddArticleForm = () => {
     }
   };
 
+  // Handle multiple category selection
   const handleCategoryChange = (e) => {
-    const value = parseInt(e.target.value);
-    setSelectedCategories((prev) =>
-      prev.includes(value) ? prev.filter((id) => id !== value) : [...prev, value]
-    );
+    const options = e.target.options;
+    const selectedIds = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selectedIds.push(options[i].value);
+      }
+    }
+    setSelectedCategoryIds(selectedIds);
   };
 
   return (
@@ -125,20 +144,22 @@ export const AddArticleForm = () => {
         placeholder="Enter department promotion level"
       />
 
-      <label>Select Categories:</label>
-      <div className="categories-list">
+      {/* Category multiple selection dropdown */}
+      <label htmlFor="categorySelect">Select Categories</label>
+      <select
+        id="categorySelect"
+        value={selectedCategoryIds}
+        onChange={handleCategoryChange}
+        className="form-select"
+        multiple
+        required
+      >
         {categories.map((category) => (
-          <div key={category.category_id}>
-            <input
-              type="checkbox"
-              value={category.category_id}
-              onChange={handleCategoryChange}
-              checked={selectedCategories.includes(category.category_id)}
-            />
+          <option key={category.category_id} value={category.category_id}>
             {category.name}
-          </div>
+          </option>
         ))}
-      </div>
+      </select>
 
       <div className="form-actions">
         <button type="submit" className="button-save" disabled={!canSave}>

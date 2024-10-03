@@ -8,11 +8,9 @@ import './ArticlesList.css'; // Import the CSS file
 
 const ArticleExcerpt = ({ article }) => {
   const [showEditForm, setShowEditForm] = useState(false);
-  const [updateId, setUpdateId] = useState('');
   const dispatch = useDispatch();
 
-  const handleUpdate = (id) => {
-    setUpdateId(id);
+  const handleUpdate = () => {
     setShowEditForm(true);
   };
 
@@ -28,17 +26,17 @@ const ArticleExcerpt = ({ article }) => {
       <p><strong>ID:</strong> {article.article_id}</p>
       <p>{article.description}</p>
       <div className="article-images">
-      {article.image_1 && <p>{article.image_1}</p>}
-      {article.image_2 && <p>{article.image_2}</p>}
-</div>
+        {article.image_1 && <p>{article.image_1}</p>}
+        {article.image_2 && <p>{article.image_2}</p>}
+      </div>
       <p><strong>Promoted on Homepage:</strong> {article.promotion_at_homepage_level === '1' ? 'Yes' : 'No'}</p>
       <p><strong>Promoted in Department:</strong> {article.promotion_at_department_level === '1' ? 'Yes' : 'No'}</p>
 
-      {showEditForm && updateId === article.article_id ? (
+      {showEditForm ? (
         <UpdateArticleForm article={article} setShowEditForm={setShowEditForm} />
       ) : (
         <div className="article-actions">
-          <button onClick={() => handleUpdate(article.article_id)} className="button-update">Update</button>
+          <button onClick={handleUpdate} className="button-update">Update</button>
           <button onClick={() => handleDeleteClick(article.article_id)} className="button-delete">Delete</button>
         </div>
       )}
@@ -64,7 +62,7 @@ export const ArticlesList = () => {
     content = <h1>Loading...</h1>;
   } else if (status === 'succeeded') {
     content = articles.map((article) => (
-      <ArticleExcerpt key={article.article_id} article={article} />
+      <ArticleExcerpt key={article.article_id} article={article} /> // Unique key prop added
     ));
   } else {
     content = <div className="error-message">Error: {error}</div>;

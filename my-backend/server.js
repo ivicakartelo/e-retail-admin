@@ -126,45 +126,90 @@ app.get('/articles', (req, res) => {
     });
 });
 
-// Create a new article
+// Create a new article and link to a category
 app.post('/articles', (req, res) => {
-    const { name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level } = req.body;
+    const {
+        name,
+        description,
+        image_1,
+        image_2,
+        promotion_at_homepage_level,
+        promotion_at_department_level,
+        category_ids, // Array of selected category IDs
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !description) {
+        return res.status(400).json({ error: 'Name and description are required.' });
+    }
+
+    // Insert the new article
     db.query(
         'INSERT INTO article (name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level) VALUES (?, ?, ?, ?, ?, ?)',
         [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level],
-        (error, results) => {
-            if (error) return res.status(500).json({ error });
-            res.status(201).json({ article_id: results.insertId, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level });
+        (insertErr, results) => {
+            if (insertErr) {
+                return res.status(500).json({ error: insertErr });
+            }
+
+            const articleId = results.insertId; // Get the new article ID
+
+            // Prepare the values for inserting into category_article
+            const categoryArticleValues = category_ids.map((category_id) => [category_id, articleId]);
+
+            // Insert into category_article for each selected category
+            db.query(
+                'INSERT INTO category_article (category_id, article_id) VALUES ?',
+                [categoryArticleValues],
+                (err) => {
+                    if (err) {
+                        return res.status(500).json({ error: err });
+                    }
+                    res.status(201).json({ id: articleId, name });
+                }
+            );
         }
     );
 });
 
+
+
+
 // Update an existing article
 app.put('/articles/:id', (req, res) => {
     const { id } = req.params;
-    const { name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level } = req.body;
-
-    if (!name || !description) {
-        console.error('Missing required fields: name or description');
-        return res.status(400).json({ error: 'Name and description are required.' });
-    }
+    const {
+        name,
+        description,
+        image_1,
+        image_2,
+        promotion_at_homepage_level,
+        promotion_at_department_level,
+        category_ids // Multiple categories
+    } = req.body;
 
     db.query(
         'UPDATE article SET name = ?, description = ?, image_1 = ?, image_2 = ?, promotion_at_homepage_level = ?, promotion_at_department_level = ? WHERE article_id = ?',
         [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, id],
         (error, results) => {
-            if (error) {
-                console.error('Database error:', error);
-                return res.status(500).json({ error });
-            }
+            if (error) return res.status(500).json({ error });
 
-            if (results.affectedRows === 0) {
-                console.error('Article not found or no changes made');
-                return res.status(404).json({ error: 'Article not found or no changes made.' });
-            }
+            // Delete existing category relations
+            db.query('DELETE FROM category_article WHERE article_id = ?', [id], (err) => {
+                if (err) return res.status(500).json({ error: err });
 
-            res.status(200).json({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level });
-            console.log(`Article updated: ${name}`);
+                // Insert the updated categories
+                const categoryArticleValues = category_ids.map((category_id) => [category_id, id]);
+                db.query(
+                    'INSERT INTO category_article (category_id, article_id) VALUES ?',
+                    [categoryArticleValues],
+                    (insertErr) => {
+                        if (insertErr) return res.status(500).json({ error: insertErr });
+
+                        res.status(200).json({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids });
+                    }
+                );
+            });
         }
     );
 });
