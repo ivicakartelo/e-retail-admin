@@ -1,7 +1,7 @@
 /* Container for the articles list */
 .articles-list {
   display: grid; /* Enable grid layout */
-  grid-template-columns: 1fr 1fr; /* Force two columns per row */
+  grid-template-columns: 1fr 1fr; /* Two columns per row */
   gap: 20px; /* Space between grid items */
   padding: 20px;
 }
@@ -61,6 +61,20 @@
   color: #fff;
 }
 
+/* Form wrapper to center the AddArticleForm */
+.form-wrapper {
+  display: flex; /* Flexbox for centering */
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* AddArticleForm styling */
+.add-article-form {
+  max-width: 600px; /* Limit the form's width */
+  width: 100%; /* Full width on smaller screens */
+  margin: 20px auto; /* Center the form */
+}
+
 /* Error message styling */
 .error-message {
   color: #e74c3c;
@@ -70,8 +84,7 @@
 
 /* Mobile-first adjustments */
 @media (max-width: 600px) {
-  /* Ensure full width on mobile */
   .articles-list {
-      grid-template-columns: 1fr; /* Single column layout on mobile */
+    grid-template-columns: 1fr; /* Single column layout on mobile */
   }
 }

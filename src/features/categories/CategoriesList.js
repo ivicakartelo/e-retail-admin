@@ -16,8 +16,14 @@ const CategoryExcerpt = ({ category }) => {
   };
 
   const onDeleteClick = (id) => {
-    dispatch(handleDelete(id));
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this category? This will also remove all associated records in the category_article table.'
+    );
+    if (confirmDelete) {
+      dispatch(handleDelete(id));
+    }
   };
+  
 
   return (
     <article className="category-card">

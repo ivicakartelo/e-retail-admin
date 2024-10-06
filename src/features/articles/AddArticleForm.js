@@ -48,7 +48,7 @@ export const AddArticleForm = () => {
         // Dispatch the action to add the new article
         await dispatch(addNewArticle(newArticle)).unwrap();
 
-        // Fetch the updated list of articles after adding the new article
+        //Fetch the updated list of articles after adding the new article
         dispatch(fetchArticles());
 
         // Clear form fields after successful submission

@@ -15,7 +15,7 @@ const ArticleExcerpt = ({ article }) => {
   };
 
   const handleDeleteClick = (id) => {
-    if (window.confirm('Are you sure you want to delete this article?')) {
+    if (window.confirm('Are you sure you want to delete this article? This will also remove associated records in the category_article table.')) {
       dispatch(handleDelete(id));
     }
   };
