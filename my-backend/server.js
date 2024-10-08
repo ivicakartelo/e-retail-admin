@@ -117,12 +117,44 @@ app.put('/categories/:id', (req, res) => {
 });
 
 // Articles Routes
+
+// Get all articles
 app.get('/articles', (req, res) => {
     db.query('SELECT * FROM article', (error, results) => {
-        if (error) return res.status(500).json({ error });
-        res.status(200).json(results);
+      if (error) return res.status(500).json({ error });
+      res.status(200).json(results);
     });
-});
+  });
+  
+  // Get article by ID including its associated categories
+  app.get('/articles/:id', (req, res) => {
+    const { id } = req.params;
+  
+    const query = `
+      SELECT 
+        a.article_id, a.name, a.description, a.image_1, a.image_2, 
+        a.promotion_at_homepage_level, a.promotion_at_department_level,
+        GROUP_CONCAT(ca.category_id) AS category_ids
+      FROM 
+        article a
+      LEFT JOIN 
+        category_article ca ON a.article_id = ca.article_id
+      WHERE 
+        a.article_id = ?
+    `;
+  
+    db.query(query, [id], (error, results) => {
+      if (error) return res.status(500).json({ error });
+      
+      if (results.length > 0) {
+        const article = results[0];
+        article.category_ids = article.category_ids ? article.category_ids.split(',').map(Number) : [];
+        res.status(200).json(article);
+      } else {
+        res.status(404).json({ message: 'Article not found' });
+      }
+    });
+  });
 
 // Create a new article and link to a category
 app.post('/articles', (req, res) => {
