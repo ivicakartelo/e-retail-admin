@@ -15,11 +15,12 @@ console.log('Department Promotion:', article.promotion_at_department_level);
   const [image2, setImage2] = useState(article.image_2);
   
   console.log('Homepage Promotion:', article.promotion_at_homepage_level);
-console.log('Department Promotion:', article.promotion_at_department_level);
-const [promotionAtHomepageLevel, setPromotionAtHomepageLevel] = useState(
+  console.log('Department Promotion:', article.promotion_at_department_level);
+
+  const [promotionAtHomepageLevel, setPromotionAtHomepageLevel] = useState(
   article.promotion_at_homepage_level !== undefined ? Number(article.promotion_at_homepage_level) : 0
 );
-const [promotionAtDepartmentLevel, setPromotionAtDepartmentLevel] = useState(
+  const [promotionAtDepartmentLevel, setPromotionAtDepartmentLevel] = useState(
   article.promotion_at_department_level !== undefined ? Number(article.promotion_at_department_level) : 0
 );
   

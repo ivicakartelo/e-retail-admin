@@ -10,8 +10,8 @@ export const AddArticleForm = () => {
   const [description, setDescription] = useState('');
   const [image1, setImage1] = useState('');
   const [image2, setImage2] = useState('');
-  const [promotionAtHomepageLevel, setPromotionAtHomepageLevel] = useState('');
-  const [promotionAtDepartmentLevel, setPromotionAtDepartmentLevel] = useState('');
+  const [promotionAtHomepageLevel, setPromotionAtHomepageLevel] = useState(0); // Default to 'No' (0)
+  const [promotionAtDepartmentLevel, setPromotionAtDepartmentLevel] = useState(0); // Default to 'No' (0)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([]); // For multiple categories
   const [addRequestStatus, setAddRequestStatus] = useState('idle');
   const [error, setError] = useState(null);
@@ -48,7 +48,7 @@ export const AddArticleForm = () => {
         // Dispatch the action to add the new article
         await dispatch(addNewArticle(newArticle)).unwrap();
 
-        //Fetch the updated list of articles after adding the new article
+        // Fetch the updated list of articles after adding the new article
         dispatch(fetchArticles());
 
         // Clear form fields after successful submission
@@ -56,8 +56,8 @@ export const AddArticleForm = () => {
         setDescription('');
         setImage1('');
         setImage2('');
-        setPromotionAtHomepageLevel('');
-        setPromotionAtDepartmentLevel('');
+        setPromotionAtHomepageLevel(0); // Reset to 'No'
+        setPromotionAtDepartmentLevel(0); // Reset to 'No'
         setSelectedCategoryIds([]); // Clear the selected categories
         setError(null);
       } catch (err) {
@@ -126,23 +126,59 @@ export const AddArticleForm = () => {
         placeholder="Enter image 2 URL"
       />
 
-      <label htmlFor="promotionHomepage">Promotion at Homepage Level</label>
-      <input
-        id="promotionHomepage"
-        type="text"
-        value={promotionAtHomepageLevel}
-        onChange={(e) => setPromotionAtHomepageLevel(e.target.value)}
-        placeholder="Enter homepage promotion level"
-      />
+      {/* Radio button group for Promotion at Homepage Level */}
+      <label>Promotion at Homepage Level</label>
+      <div className="radio-group">
+        <div>
+          <input
+            type="radio"
+            id="promotionHomepageYes"
+            name="promotionAtHomepageLevel"
+            value={1}
+            checked={promotionAtHomepageLevel === 1}
+            onChange={() => setPromotionAtHomepageLevel(1)}
+          />
+          <label htmlFor="promotionHomepageYes">Yes</label>
+        </div>
+        <div>
+          <input
+            type="radio"
+            id="promotionHomepageNo"
+            name="promotionAtHomepageLevel"
+            value={0}
+            checked={promotionAtHomepageLevel === 0}
+            onChange={() => setPromotionAtHomepageLevel(0)}
+          />
+          <label htmlFor="promotionHomepageNo">No</label>
+        </div>
+      </div>
 
-      <label htmlFor="promotionDepartment">Promotion at Department Level</label>
-      <input
-        id="promotionDepartment"
-        type="text"
-        value={promotionAtDepartmentLevel}
-        onChange={(e) => setPromotionAtDepartmentLevel(e.target.value)}
-        placeholder="Enter department promotion level"
-      />
+      {/* Radio button group for Promotion at Department Level */}
+      <label>Promotion at Department Level</label>
+      <div className="radio-group">
+        <div>
+          <input
+            type="radio"
+            id="promotionDepartmentYes"
+            name="promotionAtDepartmentLevel"
+            value={1}
+            checked={promotionAtDepartmentLevel === 1}
+            onChange={() => setPromotionAtDepartmentLevel(1)}
+          />
+          <label htmlFor="promotionDepartmentYes">Yes</label>
+        </div>
+        <div>
+          <input
+            type="radio"
+            id="promotionDepartmentNo"
+            name="promotionAtDepartmentLevel"
+            value={0}
+            checked={promotionAtDepartmentLevel === 0}
+            onChange={() => setPromotionAtDepartmentLevel(0)}
+          />
+          <label htmlFor="promotionDepartmentNo">No</label>
+        </div>
+      </div>
 
       {/* Category multiple selection dropdown */}
       <label htmlFor="categorySelect">Select Categories</label>
@@ -169,3 +205,5 @@ export const AddArticleForm = () => {
     </form>
   );
 };
+
+export default AddArticleForm;
