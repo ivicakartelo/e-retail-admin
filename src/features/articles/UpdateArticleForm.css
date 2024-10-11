@@ -50,3 +50,14 @@
     background-color: #ccc;
     cursor: not-allowed;
   }  
+
+  .radio-group {
+    display: flex;  /* Align items in a row */
+    gap: 15px;  /* Space between each radio button */
+    align-items: center;  /* Center the labels and inputs vertically */
+  }
+  
+  .radio-group div {
+    display: flex;  /* Keep label and radio button aligned */
+    align-items: center;  /* Center the radio button and label */
+  }  

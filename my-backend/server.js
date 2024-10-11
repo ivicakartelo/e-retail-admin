@@ -218,6 +218,10 @@ app.put('/articles/:id', (req, res) => {
         category_ids // Multiple categories
     } = req.body;
 
+    if (!name || !description) {
+        return res.status(400).json({ error: 'Name and description are required.' });
+    }
+
     db.query(
         'UPDATE article SET name = ?, description = ?, image_1 = ?, image_2 = ?, promotion_at_homepage_level = ?, promotion_at_department_level = ? WHERE article_id = ?',
         [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, id],
@@ -233,10 +237,9 @@ app.put('/articles/:id', (req, res) => {
                 db.query(
                     'INSERT INTO category_article (category_id, article_id) VALUES ?',
                     [categoryArticleValues],
-                    (insertErr) => {
-                        if (insertErr) return res.status(500).json({ error: insertErr });
-
-                        res.status(200).json({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids });
+                    (err) => {
+                        if (err) return res.status(500).json({ error: err });
+                        res.status(200).json({ message: 'Article updated successfully' });
                     }
                 );
             });
