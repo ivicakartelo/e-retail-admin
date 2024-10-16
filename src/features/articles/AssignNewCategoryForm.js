@@ -1,11 +1,51 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateArticle } from './articlesSlice'; // Ensure the path is correct
+import { fetchCategories } from '../categories/categoriesSlice'; // Fetch categories action
 import './AssignNewCategoryForm.css'; // Optional CSS import
 
-const AssignNewCategoryForm = ({ article, allCategories = [], setShowAssignCategoryForm }) => {
+const AssignNewCategoryForm = ({ articleId, setShowAssignCategoryForm }) => {
   const [selectedNewCategories, setSelectedNewCategories] = useState([]);
   const dispatch = useDispatch();
+  const categories = useSelector((state) => state.categories.categories); // Get all categories from the Redux store
+  const categoryStatus = useSelector((state) => state.categories.status); // Fetching status for categories
+  const [articleCategories, setArticleCategories] = useState([]); // Store associated categories
+
+  // Fetch all categories and article categories on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      // Fetch categories when the component loads
+      if (categoryStatus === 'idle') {
+        await dispatch(fetchCategories());
+      }
+
+      // Fetch article details to get associated categories
+      try {
+        const response = await fetch(`/articles/${articleId}`);
+        const data = await response.json();
+        setArticleCategories(data.category_ids); // Set the associated categories for the article
+
+        // **Log associated categories to check**
+        console.log('Associated Categories (from article):', data.category_ids);
+
+      } catch (err) {
+        console.error('Failed to fetch article details: ', err);
+      }
+    };
+
+    fetchData();
+  }, [categoryStatus, dispatch, articleId]);
+
+  // **Log all available categories to check**
+  console.log('All Categories (from Redux):', categories);
+
+  // Filter out categories that are already associated with the article
+  const filteredCategories = categories.filter(
+    (category) => !articleCategories.includes(Number(category.category_id)) // Ensure both are numbers
+  );
+
+  // **Log the filtered categories to verify the logic**
+  console.log('Filtered Categories (for dropdown):', filteredCategories);
 
   // Handle form submission for assigning new categories
   const handleAssignCategories = async (e) => {
@@ -17,17 +57,11 @@ const AssignNewCategoryForm = ({ article, allCategories = [], setShowAssignCateg
     }
 
     try {
-      const updatedCategories = [...new Set([...article.category_ids, ...selectedNewCategories])]; // Combine and remove duplicates
+      const updatedCategories = [...new Set([...articleCategories, ...selectedNewCategories])]; // Combine and remove duplicates
 
       await dispatch(
         updateArticle({
-          id: article.article_id,
-          name: article.name,
-          description: article.description,
-          image_1: article.image_1,
-          image_2: article.image_2,
-          promotion_at_homepage_level: article.promotion_at_homepage_level,
-          promotion_at_department_level: article.promotion_at_department_level,
+          id: articleId,
           category_ids: updatedCategories, // Add new categories
         })
       ).unwrap();
@@ -41,7 +75,9 @@ const AssignNewCategoryForm = ({ article, allCategories = [], setShowAssignCateg
   // Handle multiple category selection
   const handleCategoryChange = (e) => {
     const options = e.target.options;
-    const selectedIds = Array.from(options).filter(option => option.selected).map(option => option.value);
+    const selectedIds = Array.from(options)
+      .filter(option => option.selected)
+      .map(option => option.value);
     setSelectedNewCategories(selectedIds);
   };
 
@@ -57,14 +93,14 @@ const AssignNewCategoryForm = ({ article, allCategories = [], setShowAssignCateg
         multiple
         required
       >
-        {allCategories.length > 0 ? (
-          allCategories.map((category) => (
+        {filteredCategories.length > 0 ? (
+          filteredCategories.map((category) => (
             <option key={category.category_id} value={category.category_id}>
               {category.name}
             </option>
           ))
         ) : (
-          <option disabled>No categories available</option>
+          <option disabled>No new categories available</option>
         )}
       </select>
 
