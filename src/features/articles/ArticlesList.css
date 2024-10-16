@@ -1,8 +1,8 @@
 /* Container for the articles list */
 .articles-list {
-  display: grid; /* Enable grid layout */
-  grid-template-columns: 1fr 1fr; /* Two columns per row */
-  gap: 20px; /* Space between grid items */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
   padding: 20px;
 }
 
@@ -42,37 +42,50 @@
 
 /* Button styling */
 .button-update,
-.button-delete {
+.button-delete,
+.button-remove,
+.button-assign {
   padding: 10px 15px;
   border: none;
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
-}
-
-.button-update {
-  background-color: #3498db;
-  color: #fff;
+  transition: background-color 0.3s ease, transform 0.2s ease;
   margin-right: 10px;
 }
 
+/* Update button styling */
+.button-update {
+  background-color: #3498db;
+  color: #fff;
+}
+
+/* Delete button styling */
 .button-delete {
   background-color: #e74c3c;
   color: #fff;
 }
 
-/* Form wrapper to center the AddArticleForm */
-.form-wrapper {
-  display: flex; /* Flexbox for centering */
-  justify-content: center;
-  margin-bottom: 20px;
+/* Remove Categories button styling */
+.button-remove {
+  background-color: #e74c3c; /* Red background */
+  color: #fff;
 }
 
-/* AddArticleForm styling */
-.add-article-form {
-  max-width: 600px; /* Limit the form's width */
-  width: 100%; /* Full width on smaller screens */
-  margin: 20px auto; /* Center the form */
+.button-remove:hover {
+  background-color: #c0392b; /* Darker red on hover */
+  transform: scale(1.05); /* Slight zoom effect */
+}
+
+.button-remove:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.5); /* Red focus ring */
+}
+
+/* Assign Categories button styling */
+.button-assign {
+  background-color: #2ecc71;
+  color: #fff;
 }
 
 /* Error message styling */

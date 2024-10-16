@@ -1,40 +1,37 @@
-// ArticlesList.js
+// Import necessary dependencies
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchArticles, handleDelete } from './articlesSlice';
 import { AddArticleForm } from './AddArticleForm';
 import { UpdateArticleForm } from './UpdateArticleForm';
-import RemoveCategoryForm from './RemoveCategoryForm'; // Assuming you have this component
-import AssignNewCategoryForm from './AssignNewCategoryForm'; // Assuming you have this component
+import RemoveCategoryForm from './RemoveCategoryForm'; // Assuming this component exists
+import AssignNewCategoryForm from './AssignNewCategoryForm'; // Assuming this component exists
 import './ArticlesList.css'; // Import the CSS file
 
+// ArticleExcerpt component
 const ArticleExcerpt = ({ article }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showRemoveCategoryForm, setShowRemoveCategoryForm] = useState(false);
   const [showAssignCategoryForm, setShowAssignCategoryForm] = useState(false);
   const dispatch = useDispatch();
 
-  // Handle updating an article
-  const handleUpdate = () => {
-    setShowEditForm(true);
-  };
+  // Handle article update
+  const handleUpdate = () => setShowEditForm(true);
 
-  // Handle deleting an article
+  // Handle article deletion
   const handleDeleteClick = (id) => {
-    if (window.confirm('Are you sure you want to delete this article? This will also remove associated records in the category_article table.')) {
+    if (window.confirm('Are you sure you want to delete this article?')) {
       dispatch(handleDelete(id));
     }
   };
 
-  // Handle Remove Categories button
+  // Handle Remove Categories button (opens the form)
   const handleRemoveCategories = () => {
     setShowRemoveCategoryForm(true);
   };
 
   // Handle Assign New Categories button
-  const handleAssignNewCategories = () => {
-    setShowAssignCategoryForm(true);
-  };
+  const handleAssignNewCategories = () => setShowAssignCategoryForm(true);
 
   return (
     <article className="article-excerpt" key={article.article_id}>
@@ -42,8 +39,8 @@ const ArticleExcerpt = ({ article }) => {
       <p><strong>ID:</strong> {article.article_id}</p>
       <p>{article.description}</p>
       <div className="article-images">
-        {article.image_1 && <p>{article.image_1}</p>}
-        {article.image_2 && <p>{article.image_2}</p>}
+        {article.image_1 && <img src={article.image_1} alt={article.name} />}
+        {article.image_2 && <img src={article.image_2} alt={article.name} />}
       </div>
       <p><strong>Promoted on Homepage:</strong> {article.promotion_at_homepage_level === '1' ? 'Yes' : 'No'}</p>
       <p><strong>Promoted in Department:</strong> {article.promotion_at_department_level === '1' ? 'Yes' : 'No'}</p>
@@ -60,22 +57,23 @@ const ArticleExcerpt = ({ article }) => {
       )}
 
       {showRemoveCategoryForm && (
-        <RemoveCategoryForm 
-          article={article} 
-          setShowRemoveCategoryForm={setShowRemoveCategoryForm} 
+        <RemoveCategoryForm
+          article={article}
+          setShowRemoveCategoryForm={setShowRemoveCategoryForm}
         />
       )}
 
       {showAssignCategoryForm && (
-        <AssignNewCategoryForm 
-          article={article} 
-          setShowAssignCategoryForm={setShowAssignCategoryForm} 
+        <AssignNewCategoryForm
+          article={article}
+          setShowAssignCategoryForm={setShowAssignCategoryForm}
         />
       )}
     </article>
   );
 };
 
+// ArticlesList component
 export const ArticlesList = () => {
   const dispatch = useDispatch();
   const articles = useSelector((state) => state.articles.articles);
@@ -94,9 +92,9 @@ export const ArticlesList = () => {
     content = <h1>Loading...</h1>;
   } else if (status === 'succeeded') {
     content = articles.map((article) => (
-      <ArticleExcerpt key={article.article_id} article={article} /> // Unique key prop added
+      <ArticleExcerpt key={article.article_id} article={article} />
     ));
-  } else {
+  } else if (status === 'failed') {
     content = <div className="error-message">Error: {error}</div>;
   }
 

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { updateArticle } from './articlesSlice'; // Assuming this is the correct path
-import './AssignNewCategoryForm.css'; // Optional: style the form if needed
+import { updateArticle } from './articlesSlice'; // Ensure the path is correct
+import './AssignNewCategoryForm.css'; // Optional CSS import
 
-const AssignNewCategoryForm = ({ article, allCategories = [], setShowAssignNewCategoryForm }) => {
+const AssignNewCategoryForm = ({ article, allCategories = [], setShowAssignCategoryForm }) => {
   const [selectedNewCategories, setSelectedNewCategories] = useState([]);
   const dispatch = useDispatch();
 
@@ -17,7 +17,6 @@ const AssignNewCategoryForm = ({ article, allCategories = [], setShowAssignNewCa
     }
 
     try {
-      // Dispatch update article action to assign the new categories
       const updatedCategories = [...new Set([...article.category_ids, ...selectedNewCategories])]; // Combine and remove duplicates
 
       await dispatch(
@@ -29,11 +28,11 @@ const AssignNewCategoryForm = ({ article, allCategories = [], setShowAssignNewCa
           image_2: article.image_2,
           promotion_at_homepage_level: article.promotion_at_homepage_level,
           promotion_at_department_level: article.promotion_at_department_level,
-          category_ids: updatedCategories, // Update the category IDs with new ones added
+          category_ids: updatedCategories, // Add new categories
         })
       ).unwrap();
 
-      setShowAssignNewCategoryForm(false); // Close the form after successful update
+      setShowAssignCategoryForm(false); // Close the form on successful update
     } catch (err) {
       console.error('Failed to update article: ', err);
     }
@@ -42,12 +41,7 @@ const AssignNewCategoryForm = ({ article, allCategories = [], setShowAssignNewCa
   // Handle multiple category selection
   const handleCategoryChange = (e) => {
     const options = e.target.options;
-    const selectedIds = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selectedIds.push(options[i].value);
-      }
-    }
+    const selectedIds = Array.from(options).filter(option => option.selected).map(option => option.value);
     setSelectedNewCategories(selectedIds);
   };
 
@@ -79,10 +73,7 @@ const AssignNewCategoryForm = ({ article, allCategories = [], setShowAssignNewCa
         <button
           type="button"
           className="button-cancel"
-          onClick={() => {
-            console.log('Cancel button clicked'); // Debugging log
-            setShowAssignNewCategoryForm(false); // Close the form on cancel
-          }}
+          onClick={() => setShowAssignCategoryForm(false)}
         >
           Cancel
         </button>
