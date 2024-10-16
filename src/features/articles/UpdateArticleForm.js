@@ -1,36 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateArticle } from './articlesSlice';
 import './UpdateArticleForm.css';
 
 export const UpdateArticleForm = ({ article, setShowEditForm }) => {
-  console.log('Initial article data:', article);
-  console.log('Homepage Promotion:', article.promotion_at_homepage_level);
-console.log('Department Promotion:', article.promotion_at_department_level);
-
   // Initialize state variables for form fields
   const [name, setName] = useState(article.name);
   const [description, setDescription] = useState(article.description);
   const [image1, setImage1] = useState(article.image_1);
   const [image2, setImage2] = useState(article.image_2);
   
-  console.log('Homepage Promotion:', article.promotion_at_homepage_level);
-  console.log('Department Promotion:', article.promotion_at_department_level);
-
   const [promotionAtHomepageLevel, setPromotionAtHomepageLevel] = useState(
-  article.promotion_at_homepage_level !== undefined ? Number(article.promotion_at_homepage_level) : 0
-);
+    article.promotion_at_homepage_level !== undefined ? Number(article.promotion_at_homepage_level) : 0
+  );
   const [promotionAtDepartmentLevel, setPromotionAtDepartmentLevel] = useState(
-  article.promotion_at_department_level !== undefined ? Number(article.promotion_at_department_level) : 0
-);
+    article.promotion_at_department_level !== undefined ? Number(article.promotion_at_department_level) : 0
+  );
   
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState(article.category_ids || []);
   const [error, setError] = useState(null);
-
   const dispatch = useDispatch();
 
   // Ensure that the form can be submitted only when the required fields are filled
-  const canSave = Boolean(name) && Boolean(description) && selectedCategoryIds.length > 0;
+  const canSave = Boolean(name) && Boolean(description);
 
   // Handle form submission to update the article
   const onUpdateArticleClicked = async (e) => {
@@ -39,14 +30,14 @@ console.log('Department Promotion:', article.promotion_at_department_level);
     if (canSave) {
       try {
         await dispatch(updateArticle({
-          id: article.articleId,
+          id: article.article_id,
           name,
           description,
           image_1: image1,
           image_2: image2,
           promotion_at_homepage_level: promotionAtHomepageLevel,
           promotion_at_department_level: promotionAtDepartmentLevel,
-          category_ids: selectedCategoryIds,
+          category_ids: article.category_ids, // Retain the existing categories
         })).unwrap();
         setShowEditForm(false);
       } catch (err) {
@@ -55,18 +46,6 @@ console.log('Department Promotion:', article.promotion_at_department_level);
     } else {
       setError('Please fill out all required fields.');
     }
-  };
-
-  // Handle multiple category selection
-  const handleCategoryChange = (e) => {
-    const options = e.target.options;
-    const selectedIds = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selectedIds.push(options[i].value);
-      }
-    }
-    setSelectedCategoryIds(selectedIds);
   };
 
   return (
@@ -164,22 +143,6 @@ console.log('Department Promotion:', article.promotion_at_department_level);
           <label htmlFor="promotionDepartmentNo">No</label>
         </div>
       </div>
-
-      <label htmlFor="categorySelectEdit">Select Categories</label>
-      <select
-        id="categorySelectEdit"
-        value={selectedCategoryIds}
-        onChange={handleCategoryChange}
-        multiple
-        required
-      >
-        {/* Assuming categories are passed in as a prop or from a redux store */}
-        {(article.categories || []).map((category) => (
-          <option key={category.category_id} value={category.category_id}>
-            {category.name}
-          </option>
-        ))}
-      </select>
 
       <div className="form-actions">
         <button type="submit" className="button-update" disabled={!canSave}>

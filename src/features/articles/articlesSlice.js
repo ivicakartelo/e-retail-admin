@@ -26,17 +26,21 @@ export const handleDelete = createAsyncThunk('articles/handleDelete', async (id)
 });
 
 // Async thunk to update an article by ID
-export const updateArticle = createAsyncThunk('articles/updateArticle', async ({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level }) => {
-  await axios.put(`http://localhost:5000/articles/${id}`, {
-    name, 
-    description, 
-    image_1, 
-    image_2, 
-    promotion_at_homepage_level, 
-    promotion_at_department_level 
-  });
-  return { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level };
-});
+export const updateArticle = createAsyncThunk(
+  'articles/updateArticle',
+  async ({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids }) => {
+    await axios.put(`http://localhost:5000/articles/${id}`, {
+      name, 
+      description, 
+      image_1, 
+      image_2, 
+      promotion_at_homepage_level, 
+      promotion_at_department_level,
+      category_ids // Send updated category IDs to the API
+    });
+    return { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids };
+  }
+);
 
 const articlesSlice = createSlice({
   name: 'articles',
@@ -44,6 +48,7 @@ const articlesSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // Handle fetching articles
       .addCase(fetchArticles.pending, (state) => {
         state.status = 'loading';
       })
@@ -55,14 +60,20 @@ const articlesSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message;
       })
+
+      // Handle adding new article
       .addCase(addNewArticle.fulfilled, (state, action) => {
         state.articles.push(action.payload);
       })
+
+      // Handle deleting article
       .addCase(handleDelete.fulfilled, (state, action) => {
         state.articles = state.articles.filter((article) => article.article_id !== action.payload.id);
       })
+
+      // Handle updating article
       .addCase(updateArticle.fulfilled, (state, action) => {
-        const { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level } = action.payload;
+        const { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids } = action.payload;
         const existingArticle = state.articles.find((article) => article.article_id === id);
         if (existingArticle) {
           existingArticle.name = name;
@@ -71,6 +82,7 @@ const articlesSlice = createSlice({
           existingArticle.image_2 = image_2;
           existingArticle.promotion_at_homepage_level = promotion_at_homepage_level;
           existingArticle.promotion_at_department_level = promotion_at_department_level;
+          existingArticle.category_ids = category_ids; // Update the category IDs
         }
       });
   },

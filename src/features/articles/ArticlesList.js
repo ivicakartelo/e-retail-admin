@@ -4,20 +4,36 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchArticles, handleDelete } from './articlesSlice';
 import { AddArticleForm } from './AddArticleForm';
 import { UpdateArticleForm } from './UpdateArticleForm';
+import RemoveCategoryForm from './RemoveCategoryForm'; // Assuming you have this component
+import AssignNewCategoryForm from './AssignNewCategoryForm'; // Assuming you have this component
 import './ArticlesList.css'; // Import the CSS file
 
 const ArticleExcerpt = ({ article }) => {
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showRemoveCategoryForm, setShowRemoveCategoryForm] = useState(false);
+  const [showAssignCategoryForm, setShowAssignCategoryForm] = useState(false);
   const dispatch = useDispatch();
 
+  // Handle updating an article
   const handleUpdate = () => {
     setShowEditForm(true);
   };
 
+  // Handle deleting an article
   const handleDeleteClick = (id) => {
     if (window.confirm('Are you sure you want to delete this article? This will also remove associated records in the category_article table.')) {
       dispatch(handleDelete(id));
     }
+  };
+
+  // Handle Remove Categories button
+  const handleRemoveCategories = () => {
+    setShowRemoveCategoryForm(true);
+  };
+
+  // Handle Assign New Categories button
+  const handleAssignNewCategories = () => {
+    setShowAssignCategoryForm(true);
   };
 
   return (
@@ -38,7 +54,23 @@ const ArticleExcerpt = ({ article }) => {
         <div className="article-actions">
           <button onClick={handleUpdate} className="button-update">Update</button>
           <button onClick={() => handleDeleteClick(article.article_id)} className="button-delete">Delete</button>
+          <button onClick={handleRemoveCategories} className="button-remove">Remove Categories</button>
+          <button onClick={handleAssignNewCategories} className="button-assign">Assign New Categories</button>
         </div>
+      )}
+
+      {showRemoveCategoryForm && (
+        <RemoveCategoryForm 
+          article={article} 
+          setShowRemoveCategoryForm={setShowRemoveCategoryForm} 
+        />
+      )}
+
+      {showAssignCategoryForm && (
+        <AssignNewCategoryForm 
+          article={article} 
+          setShowAssignCategoryForm={setShowAssignCategoryForm} 
+        />
       )}
     </article>
   );
