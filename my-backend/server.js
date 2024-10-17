@@ -170,31 +170,23 @@ app.get('/articles/:id', (req, res) => {
 
 // New route to get associated categories
 app.get('/articles/:id/categories', (req, res) => {
-    const { id } = req.params;
-
+    const articleId = req.params.id;
+  
     const query = `
-        SELECT 
-            GROUP_CONCAT(ca.category_id) AS category_ids
-        FROM 
-            category_article ca
-        WHERE 
-            ca.article_id = ?
+      SELECT c.category_id, c.name AS category_name
+      FROM category c
+      JOIN category_article ca ON c.category_id = ca.category_id
+      WHERE ca.article_id = ?;
     `;
-
-    db.query(query, [id], (error, results) => {
-        if (error) {
-            return res.status(500).json({ error });
-        }
-
-        if (results.length > 0) {
-            const articleCategories = results[0];
-            articleCategories.category_ids = articleCategories.category_ids ? articleCategories.category_ids.split(',').map(Number) : [];
-            res.status(200).json(articleCategories);
-        } else {
-            res.status(404).json({ message: 'No categories found for this article' });
-        }
+  
+    db.query(query, [articleId], (error, results) => {
+      if (error) {
+        console.error('Error fetching categories:', error);
+        return res.status(500).json({ error: 'An error occurred while fetching categories.' });
+      }
+      res.status(200).json({ categories: results });
     });
-});
+  });    
 
 // Create a new article and link to a category
 app.post('/articles', (req, res) => {

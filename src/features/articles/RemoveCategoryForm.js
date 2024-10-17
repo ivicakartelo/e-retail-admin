@@ -22,10 +22,10 @@ const RemoveCategoryForm = ({ article, setShowRemoveCategoryForm }) => {
         const data = await response.json();
         console.log('Fetched Data:', data); // Log the fetched data
 
-        if (data.category_ids) {
-          setAssociatedCategories(data.category_ids); // Assuming data contains associated category IDs
+        if (data.categories) {
+          setAssociatedCategories(data.categories); // Store full category objects (id and name)
         } else {
-          console.error('No category_ids found in the response.');
+          console.error('No categories found in the response.');
         }
       } catch (error) {
         console.error('Error fetching associated categories:', error);
@@ -46,9 +46,9 @@ const RemoveCategoryForm = ({ article, setShowRemoveCategoryForm }) => {
 
     try {
       // Filter out the selected categories to be removed
-      const updatedCategories = associatedCategories.filter(
-        (categoryId) => !selectedCategories.includes(categoryId)
-      );
+      const updatedCategories = associatedCategories
+        .filter((category) => !selectedCategories.includes(category.category_id))
+        .map((category) => category.category_id); // Get only category IDs for updating
 
       // Dispatch action to update article with the new category list
       await dispatch(
@@ -69,7 +69,7 @@ const RemoveCategoryForm = ({ article, setShowRemoveCategoryForm }) => {
     const options = e.target.options;
     const selectedIds = Array.from(options)
       .filter((option) => option.selected)
-      .map((option) => option.value);
+      .map((option) => Number(option.value)); // Convert option value to number
     setSelectedCategories(selectedIds);
   };
 
@@ -84,9 +84,9 @@ const RemoveCategoryForm = ({ article, setShowRemoveCategoryForm }) => {
         onChange={handleCategoryChange}
         multiple
       >
-        {associatedCategories.map((categoryId) => (
-          <option key={categoryId} value={categoryId}>
-            Category {categoryId} {/* Replace with category name if available */}
+        {associatedCategories.map((category) => (
+          <option key={category.category_id} value={category.category_id}>
+            {category.category_name} {/* Display the category name here */}
           </option>
         ))}
       </select>
