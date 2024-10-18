@@ -88,12 +88,21 @@ export const ArticlesList = () => {
 
   let content;
 
+  // Handle different loading states
   if (status === 'loading') {
     content = <h1>Loading...</h1>;
   } else if (status === 'succeeded') {
-    content = articles.map((article) => (
-      <ArticleExcerpt key={article.article_id} article={article} />
-    ));
+    // Ensure that each article has a unique key
+    const uniqueArticles = Array.from(new Set(articles.map(article => article.article_id)))
+      .map(id => articles.find(article => article.article_id === id));
+
+    content = uniqueArticles.length > 0 ? (
+      uniqueArticles.map((article) => (
+        <ArticleExcerpt key={`${article.article_id}-${article.name}`} article={article} />
+      ))
+    ) : (
+      <div>No articles available.</div>
+    );
   } else if (status === 'failed') {
     content = <div className="error-message">Error: {error}</div>;
   }

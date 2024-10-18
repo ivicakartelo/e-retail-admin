@@ -29,16 +29,22 @@ export const handleDelete = createAsyncThunk('articles/handleDelete', async (id)
 export const updateArticle = createAsyncThunk(
   'articles/updateArticle',
   async ({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids }) => {
-    await axios.put(`http://localhost:5000/articles/${id}`, {
-      name, 
-      description, 
-      image_1, 
-      image_2, 
-      promotion_at_homepage_level, 
-      promotion_at_department_level,
-      category_ids // Send updated category IDs to the API
-    });
-    return { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids };
+    try {
+      const response = await axios.put(`http://localhost:5000/articles/${id}`, {
+        name,
+        description,
+        image_1,
+        image_2,
+        promotion_at_homepage_level,
+        promotion_at_department_level,
+        category_ids // Updated categories
+      });
+      console.log('Backend Response:', response.data); // Debugging backend response
+      return { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids };
+    } catch (err) {
+      console.error('Update Article Error:', err.response ? err.response.data : err);
+      throw err; // Rethrow error for proper handling
+    }
   }
 );
 

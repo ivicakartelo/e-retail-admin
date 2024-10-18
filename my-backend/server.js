@@ -186,7 +186,7 @@ app.get('/articles/:id/categories', (req, res) => {
       }
       res.status(200).json({ categories: results });
     });
-  });    
+  });
 
 // Create a new article and link to a category
 app.post('/articles', (req, res) => {
@@ -237,47 +237,54 @@ app.post('/articles', (req, res) => {
 
 
 
-// Update an existing article
+// Update an existing article and its categories
 app.put('/articles/:id', (req, res) => {
     const { id } = req.params;
     const {
-        name,
-        description,
-        image_1,
-        image_2,
-        promotion_at_homepage_level,
-        promotion_at_department_level,
-        category_ids // Multiple categories
+      name,
+      description,
+      image_1,
+      image_2,
+      promotion_at_homepage_level,
+      promotion_at_department_level,
+      category_ids = [] // Ensure this is always an array, even if empty
     } = req.body;
-
+  
+    console.log('Received payload:', req.body); // Log the payload for debugging
+  
     if (!name || !description) {
-        return res.status(400).json({ error: 'Name and description are required.' });
+      return res.status(400).json({ error: 'Name and description are required.' });
     }
-
+  
+    // Update the article
     db.query(
-        'UPDATE article SET name = ?, description = ?, image_1 = ?, image_2 = ?, promotion_at_homepage_level = ?, promotion_at_department_level = ? WHERE article_id = ?',
-        [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, id],
-        (error, results) => {
-            if (error) return res.status(500).json({ error });
-
-            // Delete existing category relations
-            db.query('DELETE FROM category_article WHERE article_id = ?', [id], (err) => {
-                if (err) return res.status(500).json({ error: err });
-
-                // Insert the updated categories
-                const categoryArticleValues = category_ids.map((category_id) => [category_id, id]);
-                db.query(
-                    'INSERT INTO category_article (category_id, article_id) VALUES ?',
-                    [categoryArticleValues],
-                    (err) => {
-                        if (err) return res.status(500).json({ error: err });
-                        res.status(200).json({ message: 'Article updated successfully' });
-                    }
-                );
-            });
-        }
+      'UPDATE article SET name = ?, description = ?, image_1 = ?, image_2 = ?, promotion_at_homepage_level = ?, promotion_at_department_level = ? WHERE article_id = ?',
+      [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, id],
+      (error) => {
+        if (error) return res.status(500).json({ error });
+  
+        // Delete existing category relations
+        db.query('DELETE FROM category_article WHERE article_id = ?', [id], (err) => {
+          if (err) return res.status(500).json({ error: err });
+  
+          // Insert new category relations if category_ids is not empty
+          if (category_ids.length > 0) {
+            const categoryArticleValues = category_ids.map((category_id) => [category_id, id]);
+            db.query(
+              'INSERT INTO category_article (category_id, article_id) VALUES ?',
+              [categoryArticleValues],
+              (insertErr) => {
+                if (insertErr) return res.status(500).json({ error: insertErr });
+                return res.status(200).json({ message: 'Article updated successfully' });
+              }
+            );
+          } else {
+            return res.status(200).json({ message: 'Article updated successfully without categories' });
+          }
+        });
+      }
     );
-});
+  });
 
 // Delete an article
 app.delete('/articles/:id', (req, res) => {
@@ -287,3 +294,24 @@ app.delete('/articles/:id', (req, res) => {
         res.status(204).end();
     });
 });
+// New route to remove categories associated with an article
+app.delete('/articles/:id/remove-categories', (req, res) => {
+    const articleId = req.params.id;
+    const { category_ids } = req.body;
+  
+    if (!category_ids || category_ids.length === 0) {
+      return res.status(400).json({ error: 'No categories provided for removal.' });
+    }
+  
+    const query = `DELETE FROM category_article WHERE article_id = ? AND category_id IN (?)`;
+  
+    db.query(query, [articleId, category_ids], (error, results) => {
+      if (error) {
+        console.error('Error removing categories:', error);
+        return res.status(500).json({ error: 'An error occurred while removing categories.' });
+      }
+  
+      res.status(200).json({ message: 'Categories removed successfully.' });
+    });
+  });
+  
