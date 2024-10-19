@@ -1,84 +1,65 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateArticle } from './articlesSlice'; // Ensure the path is correct
-import { fetchCategories } from '../categories/categoriesSlice'; // Fetch categories action
-import './AssignNewCategoryForm.css'; // Optional CSS import
 
-const AssignNewCategoryForm = ({ articleId, setShowAssignCategoryForm }) => {
-  const [selectedNewCategories, setSelectedNewCategories] = useState([]);
-  const dispatch = useDispatch();
-  const categories = useSelector((state) => state.categories.categories); // Get all categories from the Redux store
-  const categoryStatus = useSelector((state) => state.categories.status); // Fetching status for categories
-  const [articleCategories, setArticleCategories] = useState([]); // Store associated categories
+const AssignNewCategoryForm = ({ article, setShowAssignCategoryForm }) => {
+  const [noAssociateCategories, setNoAssociateCategories] = useState([]); // Categories not yet associated with the article
+  const [selectedCategories, setSelectedCategories] = useState([]); // Categories selected for assignment
 
-  // Fetch all categories and article categories on component mount
+  // Fetch non-associated categories when the component loads
   useEffect(() => {
-    const fetchData = async () => {
-      // Fetch categories when the component loads
-      if (categoryStatus === 'idle') {
-        await dispatch(fetchCategories());
-      }
-
-      // Fetch article details to get associated categories
+    const fetchNoAssociateCategories = async () => {
       try {
-        const response = await fetch(`/articles/${articleId}`);
+        const response = await fetch(`http://localhost:5000/articles/${article.article_id}/no-associate-categories`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch non-associated categories');
+        }
         const data = await response.json();
-        setArticleCategories(data.category_ids); // Set the associated categories for the article
-
-        // **Log associated categories to check**
-        console.log('Associated Categories (from article):', data.category_ids);
-
-      } catch (err) {
-        console.error('Failed to fetch article details: ', err);
+        setNoAssociateCategories(data.categories); // Assuming 'categories' is the array in the API response
+      } catch (error) {
+        console.error('Error fetching non-associated categories:', error);
       }
     };
 
-    fetchData();
-  }, [categoryStatus, dispatch, articleId]);
-
-  // **Log all available categories to check**
-  console.log('All Categories (from Redux):', categories);
-
-  // Filter out categories that are already associated with the article
-  const filteredCategories = categories.filter(
-    (category) => !articleCategories.includes(Number(category.category_id)) // Ensure both are numbers
-  );
-
-  // **Log the filtered categories to verify the logic**
-  console.log('Filtered Categories (for dropdown):', filteredCategories);
+    fetchNoAssociateCategories();
+  }, [article.article_id]);
 
   // Handle form submission for assigning new categories
   const handleAssignCategories = async (e) => {
     e.preventDefault();
 
-    if (selectedNewCategories.length === 0) {
+    if (selectedCategories.length === 0) {
       alert('Please select at least one category to assign.');
       return;
     }
 
     try {
-      const updatedCategories = [...new Set([...articleCategories, ...selectedNewCategories])]; // Combine and remove duplicates
+      const response = await fetch(`http://localhost:5000/articles/${article.article_id}/assign-categories`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ category_ids: selectedCategories }),
+      });
 
-      await dispatch(
-        updateArticle({
-          id: articleId,
-          category_ids: updatedCategories, // Add new categories
-        })
-      ).unwrap();
+      if (!response.ok) {
+        throw new Error('Failed to assign categories');
+      }
 
-      setShowAssignCategoryForm(false); // Close the form on successful update
-    } catch (err) {
-      console.error('Failed to update article: ', err);
+      // Alert the user that categories were assigned successfully
+      window.alert('Selected categories have been assigned successfully.');
+      setShowAssignCategoryForm(false); // Close the form on success
+    } catch (error) {
+      console.error('Error assigning categories:', error);
+      window.alert('There was an error assigning the categories.');
     }
   };
 
-  // Handle multiple category selection
+  // Handle category selection for assignment
   const handleCategoryChange = (e) => {
     const options = e.target.options;
     const selectedIds = Array.from(options)
       .filter(option => option.selected)
-      .map(option => option.value);
-    setSelectedNewCategories(selectedIds);
+      .map(option => Number(option.value)); // Ensure that the IDs are numbers
+    setSelectedCategories(selectedIds);
   };
 
   return (
@@ -88,15 +69,15 @@ const AssignNewCategoryForm = ({ articleId, setShowAssignCategoryForm }) => {
       <label htmlFor="assignCategoriesSelect">Select Categories to Assign:</label>
       <select
         id="assignCategoriesSelect"
-        value={selectedNewCategories}
+        value={selectedCategories}
         onChange={handleCategoryChange}
         multiple
         required
       >
-        {filteredCategories.length > 0 ? (
-          filteredCategories.map((category) => (
+        {noAssociateCategories.length > 0 ? (
+          noAssociateCategories.map((category) => (
             <option key={category.category_id} value={category.category_id}>
-              {category.name}
+              {category.category_name}
             </option>
           ))
         ) : (

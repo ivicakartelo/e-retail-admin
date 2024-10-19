@@ -125,18 +125,6 @@ app.get('/articles', (req, res) => {
       res.status(200).json(results);
     });
   });
-  
-  // Your existing setup code
-
-// Articles Routes
-
-// Get all articles
-app.get('/articles', (req, res) => {
-    db.query('SELECT * FROM article', (error, results) => {
-        if (error) return res.status(500).json({ error });
-        res.status(200).json(results);
-    });
-});
 
 // Get article by ID including its associated categories
 app.get('/articles/:id', (req, res) => {
@@ -187,6 +175,27 @@ app.get('/articles/:id/categories', (req, res) => {
       res.status(200).json({ categories: results });
     });
   });
+
+//New route to get no-associated categories
+app.get('/articles/:id/no-associate-categories', (req, res) => {
+  const articleId = req.params.id;
+
+  const query = `
+      SELECT c.category_id, c.name AS category_name
+      FROM category c
+      LEFT JOIN category_article ca ON c.category_id = ca.category_id AND ca.article_id = ?
+      WHERE ca.category_id IS NULL
+  `;
+
+  db.query(query, [articleId], (error, results) => {
+      if (error) {
+          console.error('Error fetching non-associated categories:', error);
+          return res.status(500).json({ error: 'An error occurred while fetching categories.' });
+      }
+      res.status(200).json({ categories: results });
+  });
+});
+
 
 // Create a new article and link to a category
 app.post('/articles', (req, res) => {
@@ -315,3 +324,27 @@ app.delete('/articles/:id/remove-categories', (req, res) => {
     });
   });
   
+  //New route to insert new categories no-associated with an article
+  app.post('/articles/:id/assign-categories', (req, res) => {
+    const articleId = req.params.id;
+    const { category_ids } = req.body;
+
+    if (!category_ids || category_ids.length === 0) {
+        return res.status(400).json({ error: 'No categories selected for assignment.' });
+    }
+
+    const categoryArticleValues = category_ids.map((category_id) => [category_id, articleId]);
+
+    // Insert selected categories into category_article
+    db.query(
+        'INSERT INTO category_article (category_id, article_id) VALUES ?',
+        [categoryArticleValues],
+        (error, results) => {
+            if (error) {
+                console.error('Error assigning categories:', error);
+                return res.status(500).json({ error: 'An error occurred while assigning categories.' });
+            }
+            res.status(201).json({ message: 'Categories assigned successfully.' });
+        }
+    );
+});
