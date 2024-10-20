@@ -8,6 +8,7 @@ import './CategoriesList.css'; // Ensure to include the CSS file
 const CategoryExcerpt = ({ category }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [updateId, setUpdateId] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false); // State for loading
   const updateFormRef = useRef(null); // Ref for smooth scrolling to the update form
   const dispatch = useDispatch();
 
@@ -18,12 +19,15 @@ const CategoryExcerpt = ({ category }) => {
   };
 
   // Handle deletion of a category
-  const onDeleteClick = (id) => {
+  const onDeleteClick = async (id) => {
     const confirmDelete = window.confirm(
       'Are you sure you want to delete this category? This will also remove all associated records in the category_article table.'
     );
     if (confirmDelete) {
-      dispatch(handleDelete(id));
+      setIsDeleting(true); // Set loading state to true
+      await dispatch(handleDelete(id));
+      setIsDeleting(false); // Reset loading state
+      // Optionally, add a toast notification here to inform the user of success/failure
     }
   };
 
@@ -51,8 +55,13 @@ const CategoryExcerpt = ({ category }) => {
           <button className="button-update" onClick={() => handleUpdate(category.category_id)}>
             Update
           </button>
-          <button className="button-delete" onClick={() => onDeleteClick(category.category_id)}>
-            Delete
+          <button
+            className="button-delete"
+            onClick={() => onDeleteClick(category.category_id)}
+            disabled={isDeleting} // Disable button while deleting
+            style={{ backgroundColor: 'red', color: 'white' }} // Red color for delete button
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </button>
         </div>
       )}

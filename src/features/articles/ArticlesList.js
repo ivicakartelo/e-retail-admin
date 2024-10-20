@@ -27,7 +27,8 @@ const ArticleExcerpt = ({ article }) => {
 
   // Handle article deletion
   const handleDeleteClick = (id) => {
-    if (window.confirm('Are you sure you want to delete this article?')) {
+    const userConfirmed = window.confirm('Are you sure you want to delete this article?');
+    if (userConfirmed) {
       dispatch(handleDelete(id));
     }
   };

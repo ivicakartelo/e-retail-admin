@@ -1,5 +1,3 @@
-// src/features/departments/DepartmentsList.js
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchDepartments, handleDelete } from './departmentsSlice';
@@ -11,6 +9,7 @@ import './DepartmentsList.css';
 const DepartmentExcerpt = ({ department, handleDeleteDepartment }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false); // State to show/hide AddCategoryForm
+  const [isDeleting, setIsDeleting] = useState(false); // State for loading
   const editFormRef = useRef(null); // Ref for the update form
   const addCategoryFormRef = useRef(null); // Ref for the add category form
 
@@ -52,11 +51,25 @@ const DepartmentExcerpt = ({ department, handleDeleteDepartment }) => {
           <button className="button-update" onClick={handleUpdate}>
             Update
           </button>
-          <button className="button-delete" onClick={() => handleDeleteDepartment(department.department_id)}>
-            Delete
+          <button
+            className="button-delete"
+            onClick={async () => {
+              const userConfirmed = window.confirm(
+                'Deleting this department will also delete all associated categories. Do you want to proceed?'
+              );
+              if (userConfirmed) {
+                setIsDeleting(true); // Set loading state to true
+                await handleDeleteDepartment(department.department_id); // Proceed with deletion
+                setIsDeleting(false); // Reset loading state
+              }
+            }}
+            disabled={isDeleting} // Disable button while deleting
+            style={{ backgroundColor: 'red', color: 'white' }} // Red color for delete button
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </button>
           <button className="button-add-category" onClick={handleAddCategory}>
-            {showAddCategoryForm ? "Cancel" : "Add Category"}
+            {showAddCategoryForm ? 'Cancel' : 'Add Category'}
           </button>
         </>
       )}
@@ -64,7 +77,7 @@ const DepartmentExcerpt = ({ department, handleDeleteDepartment }) => {
       {/* Show AddCategoryForm if toggled */}
       {showAddCategoryForm && (
         <div ref={addCategoryFormRef}>
-          <AddCategoryForm 
+          <AddCategoryForm
             departmentId={department.department_id} // Pass department_id to the form
             onCancel={() => setShowAddCategoryForm(false)} // Pass onCancel prop to handle cancellation
           />
@@ -90,13 +103,8 @@ export const DepartmentsList = () => {
     }
   }, [status, dispatch]);
 
-  const handleDeleteDepartment = (departmentId) => {
-    const userConfirmed = window.confirm(
-      'Deleting this department will also delete all associated categories. Do you want to proceed?'
-    );
-    if (userConfirmed) {
-      dispatch(handleDelete(departmentId)); // Proceed with deletion
-    }
+  const handleDeleteDepartment = async (departmentId) => {
+    return await dispatch(handleDelete(departmentId)); // Proceed with deletion
   };
 
   // Scroll to the AddDepartmentForm when it's shown
