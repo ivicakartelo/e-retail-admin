@@ -66,3 +66,76 @@
   margin-top: 10px;
   font-size: 14px;
 }
+/* AddCategoryForm.css */
+
+.add-category-form {
+  background-color: #f9f9f9; /* Light background for the form */
+  border: 1px solid #ddd; /* Light border for definition */
+  border-radius: 8px; /* Rounded corners */
+  padding: 20px; /* Spacing around the content */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  max-width: 400px; /* Limit width for better readability */
+  margin: 20px auto; /* Center the form horizontally */
+}
+
+.add-category-form h3 {
+  font-size: 1.5em; /* Increased font size for the heading */
+  margin-bottom: 15px; /* Space below the heading */
+  color: #333; /* Darker text color */
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%; /* Full width for input fields */
+  padding: 10px; /* Inner spacing for comfort */
+  margin-bottom: 15px; /* Space below each input */
+  border: 1px solid #ccc; /* Subtle border */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 1em; /* Consistent font size */
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  border-color: #007bff; /* Blue border on focus */
+  outline: none; /* Remove default outline */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Shadow effect on focus */
+}
+
+.button-group {
+  display: flex; /* Flexbox for button alignment */
+  justify-content: space-between; /* Space between buttons */
+}
+
+.submit-button,
+.cancel-button {
+  background-color: #007bff; /* Primary button color */
+  color: #fff; /* White text color */
+  border: none; /* Remove default border */
+  border-radius: 4px; /* Rounded corners */
+  padding: 10px 15px; /* Button padding */
+  font-size: 1em; /* Consistent font size */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s, transform 0.2s; /* Smooth transition */
+}
+
+.submit-button:hover,
+.cancel-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+.cancel-button {
+  background-color: #f44336; /* Red background for cancel */
+}
+
+.cancel-button:hover {
+  background-color: #c62828; /* Darker red on hover */
+}
+
+.error-message {
+  color: #f44336; /* Red color for error messages */
+  margin-top: 10px; /* Space above the error message */
+  font-size: 0.9em; /* Slightly smaller font size */
+}
+

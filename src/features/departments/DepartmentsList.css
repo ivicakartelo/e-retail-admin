@@ -137,3 +137,31 @@ h2 {
     font-size: 12px;
   }
 }
+/* src/features/departments/DepartmentsList.css */
+
+.button-add-department {
+  background-color: #4CAF50; /* Green background */
+  color: white; /* White text */
+  padding: 10px 20px; /* Padding around the button */
+  border: none; /* Remove border */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  font-size: 16px; /* Adjust font size */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition for background and scale */
+  margin-bottom: 20px; /* Add some space below the button */
+}
+
+.button-add-department:hover {
+  background-color: #45a049; /* Darker green on hover */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+.button-add-department:active {
+  background-color: #3e8e41; /* Even darker green when pressed */
+  transform: scale(0.98); /* Slightly shrink when pressed */
+}
+
+.button-add-department:focus {
+  outline: none; /* Remove focus outline */
+  box-shadow: 0 0 5px rgba(72, 181, 89, 0.7); /* Add subtle shadow when focused */
+}

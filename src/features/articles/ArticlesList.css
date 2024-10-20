@@ -94,6 +94,51 @@
   font-size: 18px;
   margin-top: 20px;
 }
+/* src/features/articles/ArticlesList.css */
+
+.articles-list {
+  padding: 20px;
+}
+
+.article-excerpt {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+}
+
+.article-actions {
+  margin-top: 10px;
+}
+
+.button-add-article,
+.button-update,
+.button-delete,
+.button-remove,
+.button-assign {
+  background-color: #4CAF50; /* Change to desired color */
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background-color 0.3s;
+}
+
+.button-add-article:hover,
+.button-update:hover,
+.button-delete:hover,
+.button-remove:hover,
+.button-assign:hover {
+  background-color: #45a049; /* Darker shade for hover effect */
+}
+
+.error-message {
+  color: red; /* Error text color */
+  text-align: center;
+}
 
 /* Mobile-first adjustments */
 @media (max-width: 600px) {
