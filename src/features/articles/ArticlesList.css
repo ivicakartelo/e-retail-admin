@@ -108,6 +108,34 @@
   margin-top: 20px;
 }
 
+/* Base styles for the Add Article button */
+.button-add-article {
+  background-color: #2ecc71; /* Green background for "Add Article" */
+  color: white; /* White text */
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth background color transition */
+}
+
+/* Hover effect for the Add Article button */
+.button-add-article:hover {
+  background-color: #27ae60; /* Darker green on hover */
+}
+
+/* Styles for the Cancel button */
+.button-cancel {
+  background-color: #e74c3c; /* Red background for "Cancel" */
+  color: white; /* White text */
+}
+
+/* Hover effect for the Cancel button */
+.button-cancel:hover {
+  background-color: #c0392b; /* Darker red on hover */
+}
+
+
 /* Mobile-first adjustments */
 @media (max-width: 600px) {
   .articles-list {

@@ -136,11 +136,11 @@ export const DepartmentsList = () => {
       
       {/* Button to toggle AddDepartmentForm */}
       <button
-        className="button-add-department"
-        onClick={() => setShowAddDepartmentForm(!showAddDepartmentForm)}
-      >
-        {showAddDepartmentForm ? 'Cancel' : 'Add Department'}
-      </button>
+  className={`button-add-department ${showAddDepartmentForm ? 'button-cancel' : ''}`}
+  onClick={() => setShowAddDepartmentForm(!showAddDepartmentForm)}
+>
+  {showAddDepartmentForm ? 'Cancel' : 'Add Department'}
+</button>
 
       {/* Conditionally show AddDepartmentForm */}
       {showAddDepartmentForm && (

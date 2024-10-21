@@ -1,4 +1,3 @@
-// Import necessary dependencies
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchArticles, handleDelete } from './articlesSlice';
@@ -161,7 +160,7 @@ export const ArticlesList = () => {
 
       {/* Button to toggle AddArticleForm */}
       <button
-        className="button-add-article"
+        className={`button-add-article ${showAddArticleForm ? 'button-cancel' : ''}`}
         onClick={() => setShowAddArticleForm(!showAddArticleForm)}
       >
         {showAddArticleForm ? 'Cancel' : 'Add Article'}

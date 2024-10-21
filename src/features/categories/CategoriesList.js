@@ -117,7 +117,7 @@ export const CategoriesList = () => {
 
       {/* Button to toggle AddCategoryForm */}
       <button
-        className="button-add-category"
+        className={`button-add-category ${showAddCategoryForm ? 'button-cancel' : ''}`}
         onClick={() => setShowAddCategoryForm(!showAddCategoryForm)}
       >
         {showAddCategoryForm ? 'Cancel' : 'Add Category'}

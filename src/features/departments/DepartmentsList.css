@@ -137,8 +137,8 @@ h2 {
     font-size: 12px;
   }
 }
-/* src/features/departments/DepartmentsList.css */
 
+/* Styling for the 'Add Department' button */
 .button-add-department {
   background-color: #4CAF50; /* Green background */
   color: white; /* White text */
@@ -164,4 +164,14 @@ h2 {
 .button-add-department:focus {
   outline: none; /* Remove focus outline */
   box-shadow: 0 0 5px rgba(72, 181, 89, 0.7); /* Add subtle shadow when focused */
+}
+
+/* Add styles for the Cancel button */
+.button-cancel {
+  background-color: #e74c3c; /* Red background for Cancel */
+  color: white; /* White text */
+}
+
+.button-cancel:hover {
+  background-color: #c0392b; /* Darker red on hover */
 }
