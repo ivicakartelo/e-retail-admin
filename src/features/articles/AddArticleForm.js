@@ -5,7 +5,7 @@ import { fetchCategories } from '../categories/categoriesSlice'; // Action to fe
 import { fetchArticles } from './articlesSlice'; // Action to fetch articles after adding a new one
 import './AddArticleForm.css'; // Import CSS for styling
 
-export const AddArticleForm = () => {
+export const AddArticleForm = ({ onCancel = () => {} }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [image1, setImage1] = useState('');
@@ -52,13 +52,7 @@ export const AddArticleForm = () => {
         dispatch(fetchArticles());
 
         // Clear form fields after successful submission
-        setName('');
-        setDescription('');
-        setImage1('');
-        setImage2('');
-        setPromotionAtHomepageLevel(0); // Reset to 'No'
-        setPromotionAtDepartmentLevel(0); // Reset to 'No'
-        setSelectedCategoryIds([]); // Clear the selected categories
+        resetForm();
         setError(null);
       } catch (err) {
         console.error('Failed to save the article: ', err);
@@ -81,6 +75,23 @@ export const AddArticleForm = () => {
       }
     }
     setSelectedCategoryIds(selectedIds);
+  };
+
+  // Reset form fields
+  const resetForm = () => {
+    setName('');
+    setDescription('');
+    setImage1('');
+    setImage2('');
+    setPromotionAtHomepageLevel(0); // Reset to 'No'
+    setPromotionAtDepartmentLevel(0); // Reset to 'No'
+    setSelectedCategoryIds([]); // Clear the selected categories
+  };
+
+  // Handle cancel button click
+  const handleCancel = () => {
+    resetForm(); // Reset form fields
+    onCancel();   // Call onCancel function
   };
 
   return (
@@ -200,6 +211,15 @@ export const AddArticleForm = () => {
       <div className="form-actions">
         <button type="submit" className="button-save" disabled={!canSave}>
           Save Article
+        </button>
+        <button 
+          type="button" 
+          onClick={handleCancel} 
+          className="cancel-button"
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'} // Hover effect
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'} // Reset background
+        >
+          Cancel
         </button>
       </div>
     </form>

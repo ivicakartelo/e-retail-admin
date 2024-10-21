@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { addNewDepartment } from './departmentsSlice';
 import './AddDepartmentForm.css';
 
-export const AddDepartmentForm = () => {
+export const AddDepartmentForm = ({ onCancel = () => {} }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [addRequestStatus, setAddRequestStatus] = useState('idle');
@@ -27,6 +27,14 @@ export const AddDepartmentForm = () => {
         setAddRequestStatus('idle');
       }
     }
+  };
+
+  // Handle cancel button click
+  const handleCancel = () => {
+    setName(''); // Reset name
+    setDescription(''); // Reset description
+    setError(null); // Clear any error messages
+    onCancel(); // Call the onCancel function
   };
 
   return (
@@ -54,14 +62,25 @@ export const AddDepartmentForm = () => {
             className={error ? 'input-error' : ''}
           />
         </div>
-        <button
-          type="button"
-          onClick={onSaveDepartmentClicked}
-          disabled={!canSave}
-          className={canSave ? 'button-save' : 'button-disabled'}
-        >
-          {addRequestStatus === 'pending' ? 'Saving...' : 'Save Department'}
-        </button>
+        <div className="button-group">
+          <button
+            type="button"
+            onClick={onSaveDepartmentClicked}
+            disabled={!canSave}
+            className={canSave ? 'button-save' : 'button-disabled'}
+          >
+            {addRequestStatus === 'pending' ? 'Saving...' : 'Save Department'}
+          </button>
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="cancel-button"
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'} // Hover effect
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'} // Reset background
+          >
+            Cancel
+          </button>
+        </div>
       </form>
       {error && <div className="error-message">{error}</div>}
     </div>

@@ -133,6 +133,11 @@ export const ArticlesList = () => {
     }
   }, [showAddArticleForm]);
 
+  // Handle cancel for the AddArticleForm
+  const handleCancel = () => {
+    setShowAddArticleForm(false); // Hide the form
+  };
+
   let content;
 
   // Handle different loading states
@@ -169,7 +174,8 @@ export const ArticlesList = () => {
       {/* Conditionally show AddArticleForm */}
       {showAddArticleForm && (
         <div ref={addArticleFormRef}>
-          <AddArticleForm />
+          
+          <AddArticleForm onCancel={handleCancel} /> {/* Pass onCancel to AddArticleForm */}
         </div>
       )}
 

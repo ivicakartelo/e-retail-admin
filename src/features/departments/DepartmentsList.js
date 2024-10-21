@@ -114,6 +114,11 @@ export const DepartmentsList = () => {
     }
   }, [showAddDepartmentForm]);
 
+  // Handle cancel for the AddDepartmentForm
+  const handleCancel = () => {
+    setShowAddDepartmentForm(false); // Hide the form
+  };
+
   let content;
 
   if (status === 'loading') {
@@ -145,7 +150,7 @@ export const DepartmentsList = () => {
       {/* Conditionally show AddDepartmentForm */}
       {showAddDepartmentForm && (
         <div ref={addDepartmentFormRef}>
-          <AddDepartmentForm />
+          <AddDepartmentForm onCancel={handleCancel} /> {/* Pass onCancel to AddDepartmentForm */}
         </div>
       )}
 
