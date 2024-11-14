@@ -13,11 +13,27 @@ export const fetchArticles = createAsyncThunk('articles/fetchArticles', async ()
   return response.data;
 });
 
-// Async thunk to add a new article
-export const addNewArticle = createAsyncThunk('articles/addNewArticle', async (newArticle) => {
-  const response = await axios.post('http://localhost:5000/articles', newArticle);
-  return response.data;
-});
+
+// Async thunk to add a new article with file uploads
+export const addNewArticle = createAsyncThunk(
+  'articles/addNewArticle',
+  async (formData, { rejectWithValue }) => {
+    try {
+    // Log contents of formData
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      const response = await axios.post('http://localhost:5000/articles', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'An error occurred while adding the article');
+    }
+  }
+);
 
 // Async thunk to delete an article by ID
 export const handleDelete = createAsyncThunk('articles/handleDelete', async (id) => {
