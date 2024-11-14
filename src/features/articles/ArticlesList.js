@@ -57,14 +57,22 @@ const ArticleExcerpt = ({ article }) => {
       <p>{article.description}</p>
       
       <div className="article-images">
-        <img
-          src={article.image_1 || '/assets/images/placeholder.jpg'} // Fallback image if image_1 is missing
-          alt={article.name}
-        />
-        <img
-          src={article.image_2 || '/assets/images/placeholder.jpg'} // Fallback image if image_2 is missing
-          alt={article.name}
-        />
+      <img
+        src={
+          article.image_1 
+            ? `http://localhost:5000/${article.image_1}`
+            : '/assets/images/placeholder.jpg'  // Fallback image if image_1 is missing
+        }
+        alt={`${article.name} - image_1`}
+      />
+      <img
+        src={
+          article.image_2 
+            ? `http://localhost:5000/${article.image_2}`
+            : '/assets/images/placeholder.jpg'  // Fallback image if image_2 is missing
+        }
+        alt={`${article.name} - image_2`}
+      />
       </div>
 
       <p><strong>Promoted on Homepage:</strong> {article.promotion_at_homepage_level === '1' ? 'Yes' : 'No'}</p>
