@@ -44,7 +44,7 @@ export const handleDelete = createAsyncThunk('articles/handleDelete', async (id)
 // Async thunk to update an article by ID
 export const updateArticle = createAsyncThunk(
   'articles/updateArticle',
-  async ({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids }) => {
+  async ({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level }) => {
     try {
       const response = await axios.put(`http://localhost:5000/articles/${id}`, {
         name,
@@ -52,11 +52,10 @@ export const updateArticle = createAsyncThunk(
         image_1,
         image_2,
         promotion_at_homepage_level,
-        promotion_at_department_level,
-        category_ids // Updated categories
+        promotion_at_department_level       
       });
       console.log('Backend Response:', response.data); // Debugging backend response
-      return { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids };
+      return { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level };
     } catch (err) {
       console.error('Update Article Error:', err.response ? err.response.data : err);
       throw err; // Rethrow error for proper handling
@@ -95,7 +94,7 @@ const articlesSlice = createSlice({
 
       // Handle updating article
       .addCase(updateArticle.fulfilled, (state, action) => {
-        const { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, category_ids } = action.payload;
+        const { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level } = action.payload;
         const existingArticle = state.articles.find((article) => article.article_id === id);
         if (existingArticle) {
           existingArticle.name = name;
@@ -104,7 +103,6 @@ const articlesSlice = createSlice({
           existingArticle.image_2 = image_2;
           existingArticle.promotion_at_homepage_level = promotion_at_homepage_level;
           existingArticle.promotion_at_department_level = promotion_at_department_level;
-          existingArticle.category_ids = category_ids; // Update the category IDs
         }
       });
   },

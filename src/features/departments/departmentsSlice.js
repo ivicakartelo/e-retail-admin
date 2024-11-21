@@ -15,7 +15,8 @@ export const fetchDepartments = createAsyncThunk('departments/fetchDepartments',
 export const addNewDepartment = createAsyncThunk('departments/addNewDepartment', async (newDepartment) => {
   const response = await axios.post('http://localhost:5000/departments', newDepartment);
   console.log(response.data)
-  return response.data;
+  return { department_id: response.data, ...newDepartment };
+  //return response.data;
 });
 
 export const handleDelete = createAsyncThunk('departments/handleDelete', async (id) => {
@@ -30,6 +31,13 @@ export const updateDepartment = createAsyncThunk('departments/updateDepartment',
   console.log(id, name, description)
   return { id, name, description };
 });
+
+/*
+export const updateDepartment = createAsyncThunk('departments/updateDepartment', async ({ id, name, description }) => {
+  await axios.put(`http://localhost:5000/departments/${id}`, { name, description });
+  return { id, name, description }; // Return data already known to the frontend
+});
+*/
 
 
 const departmentsSlice = createSlice({

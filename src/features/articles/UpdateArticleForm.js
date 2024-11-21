@@ -36,8 +36,7 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
           image_1: image1,
           image_2: image2,
           promotion_at_homepage_level: promotionAtHomepageLevel,
-          promotion_at_department_level: promotionAtDepartmentLevel,
-          category_ids: article.category_ids, // Retain the existing categories
+          promotion_at_department_level: promotionAtDepartmentLevel
         })).unwrap();
         setShowEditForm(false);
       } catch (err) {
