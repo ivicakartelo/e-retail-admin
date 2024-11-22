@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateArticle } from './articlesSlice';
+import { fetchArticles } from './articlesSlice';
 import './UpdateArticleForm.css';
 
 export const UpdateArticleForm = ({ article, setShowEditForm }) => {
@@ -45,6 +46,7 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
 
         // Dispatch the updateArticle action
         await dispatch(updateArticle({ id: article.article_id, data: formData })).unwrap();
+        dispatch(fetchArticles());
         setShowEditForm(false);
       } catch (err) {
         console.error('Error updating article:', err);

@@ -304,53 +304,59 @@ app.post(
 );
 
 // Update an existing article and its categories
-app.put('/articles/:id', (req, res) => {
-    const { id } = req.params;
-    const {
-      name,
-      description,
-      image_1,
-      image_2,
-      promotion_at_homepage_level,
-      promotion_at_department_level,
-      category_ids = [] // Ensure this is always an array, even if empty
-    } = req.body;
-  
-    console.log('Received payload:', req.body); // Log the payload for debugging
-  
-    if (!name || !description) {
-      return res.status(400).json({ error: 'Name and description are required.' });
+app.put(
+    '/articles/:id',
+    upload.fields([
+        { name: 'image_1', maxCount: 1 },
+        { name: 'image_2', maxCount: 1 },
+    ]),
+    (req, res) => {
+        const { id } = req.params;
+        const {
+            name,
+            description,
+            promotion_at_homepage_level,
+            promotion_at_department_level,
+        } = req.body;
+
+        if (!name || !description) {
+            return res.status(400).json({ error: 'Name and description are required.' });
+        }
+
+        const image_1 = req.files?.image_1?.[0]?.filename || null;
+        const image_2 = req.files?.image_2?.[0]?.filename || null;
+
+        const updateQuery = `
+            UPDATE article 
+            SET name = ?, description = ?, 
+                image_1 = COALESCE(?, image_1), 
+                image_2 = COALESCE(?, image_2), 
+                promotion_at_homepage_level = ?, 
+                promotion_at_department_level = ? 
+            WHERE article_id = ?
+        `;
+
+        db.query(
+            updateQuery,
+            [
+                name,
+                description,
+                image_1,
+                image_2,
+                promotion_at_homepage_level,
+                promotion_at_department_level,
+                id,
+            ],
+            (error) => {
+                if (error) {
+                    console.error('Error updating article:', error);
+                    return res.status(500).json({ error: 'Failed to update article.' });
+                }
+                res.status(200).json({ message: 'Article updated successfully' });
+            }
+        );
     }
-  
-    // Update the article
-    db.query(
-      'UPDATE article SET name = ?, description = ?, image_1 = ?, image_2 = ?, promotion_at_homepage_level = ?, promotion_at_department_level = ? WHERE article_id = ?',
-      [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level, id],
-      (error) => {
-        if (error) return res.status(500).json({ error });
-  
-        // Delete existing category relations
-        db.query('DELETE FROM category_article WHERE article_id = ?', [id], (err) => {
-          if (err) return res.status(500).json({ error: err });
-  
-          // Insert new category relations if category_ids is not empty
-          if (category_ids.length > 0) {
-            const categoryArticleValues = category_ids.map((category_id) => [category_id, id]);
-            db.query(
-              'INSERT INTO category_article (category_id, article_id) VALUES ?',
-              [categoryArticleValues],
-              (insertErr) => {
-                if (insertErr) return res.status(500).json({ error: insertErr });
-                return res.status(200).json({ message: 'Article updated successfully' });
-              }
-            );
-          } else {
-            return res.status(200).json({ message: 'Article updated successfully without categories' });
-          }
-        });
-      }
-    );
-  });
+);
 
 // Delete an article
 app.delete('/articles/:id', (req, res) => {
