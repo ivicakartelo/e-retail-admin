@@ -1,11 +1,30 @@
 const express = require('express');
+const multer = require('multer');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mysql = require('mysql2');
+const { validationResult, check } = require('express-validator'); // Fix: Import validation utilities
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use('/assets/images', express.static(path.join(__dirname, 'public/assets/images')));
+
+// Configure Multer to save images in the public/assets/images folder
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+      const dir = path.join(__dirname, 'public/assets/images');
+      cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      cb(null, uniqueSuffix + '-' + file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
 
 const db = mysql.createConnection({
     host: 'localhost',
@@ -25,6 +44,13 @@ db.connect(err => {
 app.listen(5000, () => {
     console.log('Server is running on port 5000');
 });
+
+// Reusable function for error handling
+const handleQueryError = (res, error, rollback = false, connection = null) => {
+  if (rollback && connection) connection.rollback(() => connection.release());
+  console.error(error);
+  return res.status(500).json({ error: 'Database query error', details: error.message });
+};
 
 // Departments Routes
 app.get('/departments', (req, res) => {
@@ -60,7 +86,7 @@ app.put('/departments/:id', (req, res) => {
             console.error('Database error:', error);
             return res.status(500).json({ error });
         }
-        res.status(200).json({ id, name, description });
+        res.status(204).end();
         console.log(name)
     });
 });
@@ -196,55 +222,86 @@ app.get('/articles/:id/no-associate-categories', (req, res) => {
   });
 });
 
+// Articles Routes
+app.post(
+  '/articles',
+  upload.fields([
+      { name: 'image_1', maxCount: 1 },
+      { name: 'image_2', maxCount: 1 },
+  ]),
+  [
+      check('name').notEmpty().withMessage('Name is required.'),
+      check('description').notEmpty().withMessage('Description is required.'),
+      check('category_ids').isString().withMessage('Category IDs must be a JSON string.'),
+  ],
+  (req, res) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+      }
 
-// Create a new article and link to a category
-app.post('/articles', (req, res) => {
-    const {
-        name,
-        description,
-        image_1,
-        image_2,
-        promotion_at_homepage_level,
-        promotion_at_department_level,
-        category_ids, // Array of selected category IDs
-    } = req.body;
+      const { name, description, promotion_at_homepage_level = 0, promotion_at_department_level = 0 } = req.body;
+      const image_1 = req.files?.image_1?.[0]?.filename || null;
+      const image_2 = req.files?.image_2?.[0]?.filename || null;
 
-    // Validate required fields
-    if (!name || !description) {
-        return res.status(400).json({ error: 'Name and description are required.' });
-    }
+      let category_ids;
+      try {
+          category_ids = JSON.parse(req.body.category_ids || '[]');
+      } catch (err) {
+          return res.status(400).json({ error: 'Invalid category_ids format. Must be a JSON array.' });
+      }
 
-    // Insert the new article
-    db.query(
-        'INSERT INTO article (name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level) VALUES (?, ?, ?, ?, ?, ?)',
-        [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level],
-        (insertErr, results) => {
-            if (insertErr) {
-                return res.status(500).json({ error: insertErr });
-            }
+      if (!category_ids.length) {
+          return res.status(400).json({ error: 'At least one category ID is required.' });
+      }
 
-            const articleId = results.insertId; // Get the new article ID
+      // Begin transaction
+      db.beginTransaction((transErr) => {
+          if (transErr) return handleQueryError(res, transErr);
 
-            // Prepare the values for inserting into category_article
-            const categoryArticleValues = category_ids.map((category_id) => [category_id, articleId]);
+          // Insert the article
+          const insertArticleQuery = `
+              INSERT INTO article 
+              (name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level)
+              VALUES (?, ?, ?, ?, ?, ?)
+          `;
 
-            // Insert into category_article for each selected category
-            db.query(
-                'INSERT INTO category_article (category_id, article_id) VALUES ?',
-                [categoryArticleValues],
-                (err) => {
-                    if (err) {
-                        return res.status(500).json({ error: err });
-                    }
-                    res.status(201).json({ id: articleId, name });
-                }
-            );
-        }
-    );
-});
+          db.query(
+              insertArticleQuery,
+              [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level],
+              (insertErr, results) => {
+                  if (insertErr) {
+                      return db.rollback(() => handleQueryError(res, insertErr));
+                  }
 
+                  const articleId = results.insertId;
+                  const categoryArticleValues = category_ids.map((category_id) => [category_id, articleId]);
 
+                  // Insert categories associated with the article
+                  const insertCategoryArticleQuery = `
+                      INSERT INTO category_article (category_id, article_id) 
+                      VALUES ?
+                  `;
 
+                  db.query(insertCategoryArticleQuery, [categoryArticleValues], (categoryErr) => {
+                      if (categoryErr) {
+                          return db.rollback(() => handleQueryError(res, categoryErr));
+                      }
+
+                      // Commit the transaction
+                      db.commit((commitErr) => {
+                          if (commitErr) {
+                              return handleQueryError(res, commitErr);
+                          }
+
+                          res.status(201).json({ id: articleId, name });
+                      });
+                  });
+              }
+          );
+      });
+  }
+);
 
 // Update an existing article and its categories
 app.put('/articles/:id', (req, res) => {

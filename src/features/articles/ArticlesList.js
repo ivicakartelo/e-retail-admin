@@ -60,7 +60,7 @@ const ArticleExcerpt = ({ article }) => {
       <img
         src={
           article.image_1 
-            ? `http://localhost:5000/${article.image_1}`
+            ? `http://localhost:5000/assets/images/${article.image_1}`
             : '/assets/images/placeholder.jpg'  // Fallback image if image_1 is missing
         }
         alt={`${article.name} - image_1`}
@@ -68,7 +68,7 @@ const ArticleExcerpt = ({ article }) => {
       <img
         src={
           article.image_2 
-            ? `http://localhost:5000/${article.image_2}`
+            ? `http://localhost:5000/assets/images/${article.image_2}`
             : '/assets/images/placeholder.jpg'  // Fallback image if image_2 is missing
         }
         alt={`${article.name} - image_2`}

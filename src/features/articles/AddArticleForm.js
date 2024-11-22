@@ -78,6 +78,7 @@ console.log("FormData after append:", formData);
         dispatch(fetchArticles());
         resetForm();
         setError(null);
+        onCancel(); // Close the form
       } catch (err) {
         console.error('Failed to save the article:', err);
         setError('Error saving the article');

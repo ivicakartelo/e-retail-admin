@@ -7,8 +7,8 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
   // Initialize state variables for form fields
   const [name, setName] = useState(article.name);
   const [description, setDescription] = useState(article.description);
-  const [image1, setImage1] = useState(article.image_1);
-  const [image2, setImage2] = useState(article.image_2);
+  const [image1, setImage1] = useState(null); // New file for image_1
+  const [image2, setImage2] = useState(null); // New file for image_2
   
   const [promotionAtHomepageLevel, setPromotionAtHomepageLevel] = useState(
     article.promotion_at_homepage_level !== undefined ? Number(article.promotion_at_homepage_level) : 0
@@ -29,22 +29,35 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
 
     if (canSave) {
       try {
-        await dispatch(updateArticle({
-          id: article.article_id,
-          name,
-          description,
-          image_1: image1,
-          image_2: image2,
-          promotion_at_homepage_level: promotionAtHomepageLevel,
-          promotion_at_department_level: promotionAtDepartmentLevel
-        })).unwrap();
+        const formData = new FormData();
+
+        // Append form fields
+        formData.append('name', name);
+        formData.append('description', description);
+
+        // Append new files if provided
+        if (image1) formData.append('image_1', image1);
+        if (image2) formData.append('image_2', image2);
+
+        // Append radio values
+        formData.append('promotion_at_homepage_level', promotionAtHomepageLevel);
+        formData.append('promotion_at_department_level', promotionAtDepartmentLevel);
+
+        // Dispatch the updateArticle action
+        await dispatch(updateArticle({ id: article.article_id, data: formData })).unwrap();
         setShowEditForm(false);
       } catch (err) {
+        console.error('Error updating article:', err);
         setError('Error updating article');
       }
     } else {
       setError('Please fill out all required fields.');
     }
+  };
+
+  // Handle file selection
+  const handleFileChange = (e, setFile) => {
+    setFile(e.target.files[0]); // Set the selected file
   };
 
   return (
@@ -77,19 +90,19 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
       <input
         id="articleImage1Edit"
         name="articleImage1Edit"
-        placeholder="Edit image 1 URL"
-        value={image1}
-        onChange={(e) => setImage1(e.target.value)}
+        type="file"
+        onChange={(e) => handleFileChange(e, setImage1)}
       />
+      {article.image_1 && !image1 && <p>Current: {article.image_1}</p>}
 
       <label htmlFor="articleImage2Edit">Image 2</label>
       <input
         id="articleImage2Edit"
         name="articleImage2Edit"
-        placeholder="Edit image 2 URL"
-        value={image2}
-        onChange={(e) => setImage2(e.target.value)}
+        type="file"
+        onChange={(e) => handleFileChange(e, setImage2)}
       />
+      {article.image_2 && !image2 && <p>Current: {article.image_2}</p>}
 
       <label>Promotion at Homepage Level</label>
       <div className="radio-group">

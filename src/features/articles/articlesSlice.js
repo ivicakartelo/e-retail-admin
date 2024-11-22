@@ -13,13 +13,12 @@ export const fetchArticles = createAsyncThunk('articles/fetchArticles', async ()
   return response.data;
 });
 
-
 // Async thunk to add a new article with file uploads
 export const addNewArticle = createAsyncThunk(
   'articles/addNewArticle',
   async (formData, { rejectWithValue }) => {
     try {
-    // Log contents of formData
+      // Log contents of formData for debugging
       for (let [key, value] of formData.entries()) {
         console.log(`${key}:`, value);
       }
@@ -41,24 +40,25 @@ export const handleDelete = createAsyncThunk('articles/handleDelete', async (id)
   return { id };
 });
 
-// Async thunk to update an article by ID
+// Async thunk to update an article by ID with file uploads
 export const updateArticle = createAsyncThunk(
   'articles/updateArticle',
-  async ({ id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level }) => {
+  async ({ id, data }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`http://localhost:5000/articles/${id}`, {
-        name,
-        description,
-        image_1,
-        image_2,
-        promotion_at_homepage_level,
-        promotion_at_department_level       
+      // Log FormData contents for debugging
+      for (let [key, value] of data.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      const response = await axios.put(`http://localhost:5000/articles/${id}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
+
       console.log('Backend Response:', response.data); // Debugging backend response
-      return { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level };
-    } catch (err) {
-      console.error('Update Article Error:', err.response ? err.response.data : err);
-      throw err; // Rethrow error for proper handling
+      return { id, ...response.data };
+    } catch (error) {
+      console.error('Update Article Error:', error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || 'An error occurred while updating the article');
     }
   }
 );
@@ -94,16 +94,19 @@ const articlesSlice = createSlice({
 
       // Handle updating article
       .addCase(updateArticle.fulfilled, (state, action) => {
-        const { id, name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level } = action.payload;
+        const { id, ...updatedData } = action.payload;
         const existingArticle = state.articles.find((article) => article.article_id === id);
         if (existingArticle) {
-          existingArticle.name = name;
-          existingArticle.description = description;
-          existingArticle.image_1 = image_1;
-          existingArticle.image_2 = image_2;
-          existingArticle.promotion_at_homepage_level = promotion_at_homepage_level;
-          existingArticle.promotion_at_department_level = promotion_at_department_level;
+          Object.assign(existingArticle, updatedData);
         }
+      })
+
+      // Handle rejected cases for adding/updating
+      .addCase(addNewArticle.rejected, (state, action) => {
+        state.error = action.payload || 'An error occurred while adding the article';
+      })
+      .addCase(updateArticle.rejected, (state, action) => {
+        state.error = action.payload || 'An error occurred while updating the article';
       });
   },
 });
