@@ -155,3 +155,18 @@
     padding: 8px 12px; /* Smaller padding on buttons */
   }
 }
+
+.button-cleanup {
+  background-color: #ff6666;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  margin: 10px 0;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.button-cleanup:hover {
+  background-color: #cc0000;
+}

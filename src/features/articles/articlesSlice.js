@@ -63,6 +63,16 @@ export const updateArticle = createAsyncThunk(
   }
 );
 
+// Async thunk to clean up unused images
+export const cleanupImages = createAsyncThunk('cleanupImages', async (_, { rejectWithValue }) => {
+  try {
+    const response = await axios.delete('http://localhost:5000/cleanupImages');
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || 'An error occurred while cleaning up images');
+  }
+});
+
 const articlesSlice = createSlice({
   name: 'articles',
   initialState,
@@ -107,7 +117,19 @@ const articlesSlice = createSlice({
       })
       .addCase(updateArticle.rejected, (state, action) => {
         state.error = action.payload || 'An error occurred while updating the article';
-      });
+      })
+      .addCase(cleanupImages.pending, (state) => {
+        state.status = 'cleaning'; // Optional: add a 'cleaning' status
+      })
+      .addCase(cleanupImages.fulfilled, (state, action) => {
+        console.log('Cleanup successful:', action.payload);
+        state.status = 'succeeded'; // Reset to a stable state
+    })
+    .addCase(cleanupImages.rejected, (state, action) => {
+        console.error('Cleanup error:', action.payload);
+        state.error = action.payload || 'An error occurred during image cleanup';
+        state.status = 'succeeded'; // Ensure the app doesn’t stay in 'cleaning' state
+    });
   },
 });
 

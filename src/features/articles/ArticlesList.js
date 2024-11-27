@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchArticles, handleDelete } from './articlesSlice';
 import { AddArticleForm } from './AddArticleForm';
+import { cleanupImages } from './articlesSlice';
 import { UpdateArticleForm } from './UpdateArticleForm';
 import RemoveCategoryForm from './RemoveCategoryForm';
 import AssignNewCategoryForm from './AssignNewCategoryForm';
@@ -51,7 +52,7 @@ const ArticleExcerpt = ({ article }) => {
   }, [showAssignCategoryForm]);
 
   return (
-    <article className="article-excerpt" key={article.article_id}>
+    <article className="article-excerpt">
       <h2>{article.name}</h2>
       <p><strong>ID:</strong> {article.article_id}</p>
       <p>{article.description}</p>
@@ -69,8 +70,7 @@ const ArticleExcerpt = ({ article }) => {
         src={
           article.image_2 
             ? `http://localhost:5000/assets/images/${article.image_2}`
-            : '/assets/images/placeholder.jpg'  // Fallback image if image_2 is missing
-        }
+            : '/assets/images/placeholder.jpg'}
         alt={`${article.name} - image_2`}
       />
       </div>
@@ -129,6 +129,12 @@ export const ArticlesList = () => {
 
   const handleCancel = () => setShowAddArticleForm(false);
 
+  const handleCleanup = () => {
+    if (window.confirm('Are you sure you want to clean up unused images?')) {
+      dispatch(cleanupImages());
+    }
+  };
+
   let content;
 
   // Handle loading states
@@ -145,8 +151,12 @@ export const ArticlesList = () => {
   }
 
   return (
-    <section className="articles-list">
+    <article className="articles-list">
       <h1>Articles</h1>
+      {/* Add Cleanup Button */}
+      <button className="button-cleanup" onClick={handleCleanup}>
+        Clean Up Unused Images
+      </button>
       <button
         className={`button-add-article ${showAddArticleForm ? 'button-cancel' : ''}`}
         onClick={() => setShowAddArticleForm(!showAddArticleForm)}
@@ -161,6 +171,6 @@ export const ArticlesList = () => {
       )}
 
       {content}
-    </section>
+    </article>
   );
 };  

@@ -52,6 +52,48 @@ const handleQueryError = (res, error, rollback = false, connection = null) => {
   return res.status(500).json({ error: 'Database query error', details: error.message });
 };
 
+const fs = require('fs');
+
+// Cleanup route
+app.delete('/cleanupImages', (req, res) => {
+    const folderPath = path.join(__dirname, 'public/assets/images');
+
+    // Step 1: Get all filenames from the `images` folder
+    const filesInFolder = fs.readdirSync(folderPath);
+
+    // Step 2: Get all image filenames from the database
+    const query = 'SELECT image_1, image_2 FROM article';
+
+    db.query(query, (error, results) => {
+        if (error) {
+            console.error('Error fetching image data from the database:', error);
+            return res.status(500).json({ error: 'Database query error.' });
+        }
+
+        // Step 3: Extract image filenames from the database results
+        const imageFilenamesInDB = [];
+        results.forEach(row => {
+            if (row.image_1) imageFilenamesInDB.push(row.image_1);
+            if (row.image_2) imageFilenamesInDB.push(row.image_2);
+        });
+
+        // Step 4: Identify images in the folder that are not in the database
+        const imagesToDelete = filesInFolder.filter(file => !imageFilenamesInDB.includes(file));
+
+        // Step 5: Delete the identified images
+        imagesToDelete.forEach(file => {
+            const filePath = path.join(folderPath, file);
+            fs.unlinkSync(filePath);
+            console.log(`Deleted: ${file}`);
+        });
+
+        res.status(200).json({
+            message: 'Cleanup complete.',
+            deletedImages: imagesToDelete,
+        });
+    });
+});
+
 // Departments Routes
 app.get('/departments', (req, res) => {
     db.query('SELECT * FROM department', (error, results) => {
@@ -303,7 +345,7 @@ app.post(
   }
 );
 
-// Update an existing article and its categories
+// Update an existing article
 app.put(
     '/articles/:id',
     upload.fields([

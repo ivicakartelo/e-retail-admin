@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateArticle } from './articlesSlice';
 import { fetchArticles } from './articlesSlice';
@@ -10,7 +10,6 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
   const [description, setDescription] = useState(article.description);
   const [image1, setImage1] = useState(null); // New file for image_1
   const [image2, setImage2] = useState(null); // New file for image_2
-  
   const [promotionAtHomepageLevel, setPromotionAtHomepageLevel] = useState(
     article.promotion_at_homepage_level !== undefined ? Number(article.promotion_at_homepage_level) : 0
   );
