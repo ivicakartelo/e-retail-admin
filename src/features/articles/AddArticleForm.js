@@ -6,17 +6,18 @@ import { fetchArticles } from './articlesSlice';
 import './AddArticleForm.css';
 
 export const AddArticleForm = ({ onCancel = () => {} }) => {
-  // Defining the state as a single object representing the article
+  // Updated state to include `price`
   const [newArticle, setNewArticle] = useState({
     name: '',
     description: '',
+    price: '', // Added price to state
     image_1: null,
     image_2: null,
     promotion_at_homepage_level: 0,
     promotion_at_department_level: 0,
     category_ids: [],
   });
-  
+
   const [addRequestStatus, setAddRequestStatus] = useState('idle');
   const [error, setError] = useState(null);
 
@@ -30,55 +31,39 @@ export const AddArticleForm = ({ onCancel = () => {} }) => {
     }
   }, [categoryStatus, dispatch]);
 
-  // Check if the form can be submitted
   const canSave =
     Boolean(newArticle.name) &&
     Boolean(newArticle.description) &&
+    Boolean(newArticle.price) && // Ensure price is filled
     newArticle.category_ids.length > 0 &&
     addRequestStatus === 'idle';
 
-  // Handle form submission
   const onSaveArticleClicked = async (e) => {
     e.preventDefault();
 
     if (canSave) {
       try {
         setAddRequestStatus('pending');
-        
-        console.log('New Article Data:', newArticle); // Check data before sending
 
-        // Create FormData object and append fields and files
+        // Create FormData object and append fields
         const formData = new FormData();
         formData.append('name', newArticle.name);
         formData.append('description', newArticle.description);
+        formData.append('price', newArticle.price); // Append price
 
-        // Append images only if they are selected
         if (newArticle.image_1) formData.append('image_1', newArticle.image_1);
         if (newArticle.image_2) formData.append('image_2', newArticle.image_2);
 
         formData.append('promotion_at_homepage_level', newArticle.promotion_at_homepage_level);
         formData.append('promotion_at_department_level', newArticle.promotion_at_department_level);
-        
-        // Log FormData after appending each field to check it
-console.log("FormData after append:", formData);
-        
-        // Console log selectedCategoryIds before adding it to formData
-        console.log('selectedCategoryIds:', newArticle.category_ids);
-        formData.append('category_ids', JSON.stringify(newArticle.category_ids)); // Array as JSON string
-        console.log('FormData:', formData); // Ensure this contains all fields before dispatch
-        
-        for (let pair of formData.entries()) {
-          console.log(pair[0]+ ', ' + pair[1]);
-        }
-        
-        // Dispatch the thunk with FormData
+        formData.append('category_ids', JSON.stringify(newArticle.category_ids));
+
         await dispatch(addNewArticle(formData)).unwrap();
-        
-        // Refetch articles and reset form after successful save
+
         dispatch(fetchArticles());
         resetForm();
         setError(null);
-        onCancel(); // Close the form
+        onCancel();
       } catch (err) {
         console.error('Failed to save the article:', err);
         setError('Error saving the article');
@@ -90,7 +75,6 @@ console.log("FormData after append:", formData);
     }
   };
 
-  // Handle category selection
   const handleCategoryChange = (e) => {
     const options = e.target.options;
     const selectedIds = [];
@@ -105,11 +89,11 @@ console.log("FormData after append:", formData);
     }));
   };
 
-  // Reset form to default state
   const resetForm = () => {
     setNewArticle({
       name: '',
       description: '',
+      price: '', // Reset price
       image_1: null,
       image_2: null,
       promotion_at_homepage_level: 0,
@@ -129,7 +113,6 @@ console.log("FormData after append:", formData);
 
       {error && <div className="form-error">{error}</div>}
 
-      {/* Article Name Input */}
       <label htmlFor="articleName">Article Name</label>
       <input
         id="articleName"
@@ -140,7 +123,6 @@ console.log("FormData after append:", formData);
         required
       />
 
-      {/* Description Input */}
       <label htmlFor="articleDescription">Description</label>
       <textarea
         id="articleDescription"
@@ -150,25 +132,32 @@ console.log("FormData after append:", formData);
         required
       />
 
-      {/* Image 1 Input */}
+      {/* New Input for Price */}
+      <label htmlFor="articlePrice">Price</label>
+      <input
+        id="articlePrice"
+        type="number"
+        step="0.01"
+        value={newArticle.price}
+        onChange={(e) => setNewArticle({ ...newArticle, price: e.target.value })}
+        placeholder="Enter price"
+        required
+      />
+
       <label htmlFor="image1">Image 1</label>
       <input
         id="image1"
         type="file"
         onChange={(e) => setNewArticle({ ...newArticle, image_1: e.target.files[0] })}
-        required
       />
 
-      {/* Image 2 Input */}
       <label htmlFor="image2">Image 2</label>
       <input
         id="image2"
         type="file"
         onChange={(e) => setNewArticle({ ...newArticle, image_2: e.target.files[0] })}
-        required
       />
 
-      {/* Promotion at Homepage Level */}
       <label>Promotion at Homepage Level</label>
       <div className="radio-group">
         <div>
@@ -195,7 +184,6 @@ console.log("FormData after append:", formData);
         </div>
       </div>
 
-      {/* Promotion at Department Level */}
       <label>Promotion at Department Level</label>
       <div className="radio-group">
         <div>
@@ -222,7 +210,6 @@ console.log("FormData after append:", formData);
         </div>
       </div>
 
-      {/* Category Selection */}
       <label htmlFor="categorySelect">Select Categories</label>
       <select
         id="categorySelect"
@@ -243,12 +230,10 @@ console.log("FormData after append:", formData);
         <button type="submit" className="button-save" disabled={!canSave}>
           Save Article
         </button>
-        <button 
-          type="button" 
-          onClick={handleCancel} 
+        <button
+          type="button"
+          onClick={handleCancel}
           className="cancel-button"
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
         >
           Cancel
         </button>

@@ -19,17 +19,13 @@ const ArticleExcerpt = ({ article }) => {
 
   const dispatch = useDispatch();
 
-  // Handle Update button click
   const handleUpdate = () => setShowEditForm(true);
-
-  // Handle Delete button click
   const handleDeleteClick = (id) => {
     if (window.confirm('Are you sure you want to delete this article?')) {
       dispatch(handleDelete(id));
     }
   };
 
-  // Handle form toggles
   const handleToggleForm = (form) => {
     if (form === 'remove') setShowRemoveCategoryForm(true);
     if (form === 'assign') setShowAssignCategoryForm(true);
@@ -56,23 +52,29 @@ const ArticleExcerpt = ({ article }) => {
       <h2>{article.name}</h2>
       <p><strong>ID:</strong> {article.article_id}</p>
       <p>{article.description}</p>
-      
+
+      {/* Safely display the price */}
+      <p><strong>Price:</strong> 
+        {article.price ? `$${Number(article.price).toFixed(2)}` : 'Price not available'}
+      </p>
+
       <div className="article-images">
-      <img
-        src={
-          article.image_1 
-            ? `http://localhost:5000/assets/images/${article.image_1}`
-            : '/assets/images/placeholder.jpg'  // Fallback image if image_1 is missing
-        }
-        alt={`${article.name} - image_1`}
-      />
-      <img
-        src={
-          article.image_2 
-            ? `http://localhost:5000/assets/images/${article.image_2}`
-            : '/assets/images/placeholder.jpg'}
-        alt={`${article.name} - image_2`}
-      />
+        <img
+          src={
+            article.image_1 
+              ? `http://localhost:5000/assets/images/${article.image_1}`
+              : '/assets/images/placeholder.jpg'
+          }
+          alt={`${article.name} - image_1`}
+        />
+        <img
+          src={
+            article.image_2 
+              ? `http://localhost:5000/assets/images/${article.image_2}`
+              : '/assets/images/placeholder.jpg'
+          }
+          alt={`${article.name} - image_2`}
+        />
       </div>
 
       <p><strong>Promoted on Homepage:</strong> {article.promotion_at_homepage_level === '1' ? 'Yes' : 'No'}</p>

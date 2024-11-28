@@ -266,84 +266,92 @@ app.get('/articles/:id/no-associate-categories', (req, res) => {
 
 // Articles Routes
 app.post(
-  '/articles',
-  upload.fields([
+    '/articles',
+    upload.fields([
       { name: 'image_1', maxCount: 1 },
       { name: 'image_2', maxCount: 1 },
-  ]),
-  [
+    ]),
+    [
       check('name').notEmpty().withMessage('Name is required.'),
       check('description').notEmpty().withMessage('Description is required.'),
+      check('price').isFloat({ gt: 0 }).withMessage('Price must be a positive number.'),
       check('category_ids').isString().withMessage('Category IDs must be a JSON string.'),
-  ],
-  (req, res) => {
+    ],
+    (req, res) => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ errors: errors.array() });
       }
-
-      const { name, description, promotion_at_homepage_level = 0, promotion_at_department_level = 0 } = req.body;
+  
+      const { 
+        name, 
+        description, 
+        price, 
+        promotion_at_homepage_level = 0, 
+        promotion_at_department_level = 0 
+      } = req.body;
+  
       const image_1 = req.files?.image_1?.[0]?.filename || null;
       const image_2 = req.files?.image_2?.[0]?.filename || null;
-
+  
       let category_ids;
       try {
-          category_ids = JSON.parse(req.body.category_ids || '[]');
+        category_ids = JSON.parse(req.body.category_ids || '[]');
       } catch (err) {
-          return res.status(400).json({ error: 'Invalid category_ids format. Must be a JSON array.' });
+        return res.status(400).json({ error: 'Invalid category_ids format. Must be a JSON array.' });
       }
-
+  
       if (!category_ids.length) {
-          return res.status(400).json({ error: 'At least one category ID is required.' });
+        return res.status(400).json({ error: 'At least one category ID is required.' });
       }
-
+  
       // Begin transaction
       db.beginTransaction((transErr) => {
-          if (transErr) return handleQueryError(res, transErr);
-
-          // Insert the article
-          const insertArticleQuery = `
-              INSERT INTO article 
-              (name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level)
-              VALUES (?, ?, ?, ?, ?, ?)
-          `;
-
-          db.query(
-              insertArticleQuery,
-              [name, description, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level],
-              (insertErr, results) => {
-                  if (insertErr) {
-                      return db.rollback(() => handleQueryError(res, insertErr));
-                  }
-
-                  const articleId = results.insertId;
-                  const categoryArticleValues = category_ids.map((category_id) => [category_id, articleId]);
-
-                  // Insert categories associated with the article
-                  const insertCategoryArticleQuery = `
-                      INSERT INTO category_article (category_id, article_id) 
-                      VALUES ?
-                  `;
-
-                  db.query(insertCategoryArticleQuery, [categoryArticleValues], (categoryErr) => {
-                      if (categoryErr) {
-                          return db.rollback(() => handleQueryError(res, categoryErr));
-                      }
-
-                      // Commit the transaction
-                      db.commit((commitErr) => {
-                          if (commitErr) {
-                              return handleQueryError(res, commitErr);
-                          }
-
-                          res.status(201).json({ id: articleId, name });
-                      });
-                  });
+        if (transErr) return handleQueryError(res, transErr);
+  
+        // Insert the article with the price field
+        const insertArticleQuery = `
+          INSERT INTO article 
+          (name, description, price, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+  
+        db.query(
+          insertArticleQuery,
+          [name, description, price, image_1, image_2, promotion_at_homepage_level, promotion_at_department_level],
+          (insertErr, results) => {
+            if (insertErr) {
+              return db.rollback(() => handleQueryError(res, insertErr));
+            }
+  
+            const articleId = results.insertId;
+            const categoryArticleValues = category_ids.map((category_id) => [category_id, articleId]);
+  
+            // Insert categories associated with the article
+            const insertCategoryArticleQuery = `
+              INSERT INTO category_article (category_id, article_id) 
+              VALUES ?
+            `;
+  
+            db.query(insertCategoryArticleQuery, [categoryArticleValues], (categoryErr) => {
+              if (categoryErr) {
+                return db.rollback(() => handleQueryError(res, categoryErr));
               }
-          );
+  
+              // Commit the transaction
+              db.commit((commitErr) => {
+                if (commitErr) {
+                  return handleQueryError(res, commitErr);
+                }
+  
+                res.status(201).json({ id: articleId, name });
+              });
+            });
+          }
+        );
       });
-  }
-);
+    }
+  );  
 
 // Update an existing article
 app.put(
