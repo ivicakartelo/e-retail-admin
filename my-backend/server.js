@@ -365,12 +365,14 @@ app.put(
         const {
             name,
             description,
+            price, // Add price to destructure from request body
             promotion_at_homepage_level,
             promotion_at_department_level,
         } = req.body;
 
-        if (!name || !description) {
-            return res.status(400).json({ error: 'Name and description are required.' });
+        // Validate required fields
+        if (!name || !description || price === undefined) {
+            return res.status(400).json({ error: 'Name, description, and price are required.' });
         }
 
         const image_1 = req.files?.image_1?.[0]?.filename || null;
@@ -378,7 +380,10 @@ app.put(
 
         const updateQuery = `
             UPDATE article 
-            SET name = ?, description = ?, 
+            SET 
+                name = ?, 
+                description = ?, 
+                price = ?, -- Add price to the SQL update query
                 image_1 = COALESCE(?, image_1), 
                 image_2 = COALESCE(?, image_2), 
                 promotion_at_homepage_level = ?, 
@@ -391,6 +396,7 @@ app.put(
             [
                 name,
                 description,
+                price, // Include price in the query parameters
                 image_1,
                 image_2,
                 promotion_at_homepage_level,

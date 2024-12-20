@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateArticle } from './articlesSlice';
 import { fetchArticles } from './articlesSlice';
@@ -8,20 +8,21 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
   // Initialize state variables for form fields
   const [name, setName] = useState(article.name);
   const [description, setDescription] = useState(article.description);
-  const [image1, setImage1] = useState(null); // New file for image_1
-  const [image2, setImage2] = useState(null); // New file for image_2
+  const [price, setPrice] = useState(article.price || ''); // Add price
+  const [image1, setImage1] = useState(null);
+  const [image2, setImage2] = useState(null);
   const [promotionAtHomepageLevel, setPromotionAtHomepageLevel] = useState(
     article.promotion_at_homepage_level !== undefined ? Number(article.promotion_at_homepage_level) : 0
   );
   const [promotionAtDepartmentLevel, setPromotionAtDepartmentLevel] = useState(
     article.promotion_at_department_level !== undefined ? Number(article.promotion_at_department_level) : 0
   );
-  
+
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
 
-  // Ensure that the form can be submitted only when the required fields are filled
-  const canSave = Boolean(name) && Boolean(description);
+  // Ensure the form can be submitted only when required fields are filled
+  const canSave = Boolean(name) && Boolean(description) && Boolean(price);
 
   // Handle form submission to update the article
   const onUpdateArticleClicked = async (e) => {
@@ -34,6 +35,7 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
         // Append form fields
         formData.append('name', name);
         formData.append('description', description);
+        formData.append('price', price); // Add price to form data
 
         // Append new files if provided
         if (image1) formData.append('image_1', image1);
@@ -58,7 +60,7 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
 
   // Handle file selection
   const handleFileChange = (e, setFile) => {
-    setFile(e.target.files[0]); // Set the selected file
+    setFile(e.target.files[0]);
   };
 
   return (
@@ -84,6 +86,17 @@ export const UpdateArticleForm = ({ article, setShowEditForm }) => {
         placeholder="Edit article description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
+        required
+      />
+
+      <label htmlFor="articlePriceEdit">Price</label>
+      <input
+        id="articlePriceEdit"
+        name="articlePriceEdit"
+        type="number"
+        placeholder="Enter price"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
         required
       />
 
