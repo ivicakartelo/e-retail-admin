@@ -19,6 +19,7 @@ SET time_zone = "+00:00";
 -- Database: `e_retail`
 CREATE DATABASE IF NOT EXISTS `e_retail` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `e_retail`;
+
 -- Table: `article`
 DROP TABLE IF EXISTS `article`;
 CREATE TABLE `article` (
@@ -99,7 +100,7 @@ INSERT INTO `department` (`department_id`, `name`, `description`) VALUES
 (9, 'Groceries', 'Daily essentials and groceries'),
 (10, 'Furniture', 'Furniture for home and office use');
 
-Foreign Keys
+-- Foreign Keys
 ALTER TABLE `category`
   ADD CONSTRAINT `category_ibfk_1` FOREIGN KEY (`department_id`) REFERENCES `department` (`department_id`) ON DELETE CASCADE;
 
@@ -112,111 +113,3 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
-CREATE TABLE `users` (
-  `user_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(100) NOT NULL,
-  `email` VARCHAR(100) NOT NULL UNIQUE,
-  `password` VARCHAR(255) NOT NULL,
-  `role` ENUM('customer', 'admin') NOT NULL DEFAULT 'customer',
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE `promotions` (
-  `promotion_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(100) NOT NULL,
-  `description` TEXT DEFAULT NULL,
-  `discount_percentage` DECIMAL(5,2) NOT NULL CHECK (`discount_percentage` BETWEEN 0 AND 100),
-  `start_date` DATETIME NOT NULL,
-  `end_date` DATETIME NOT NULL,
-  `applies_to` ENUM('article', 'category', 'department', 'global') NOT NULL,
-  `reference_id` INT(10) UNSIGNED DEFAULT NULL, -- Links to the relevant article, category, or department
-  PRIMARY KEY (`promotion_id`),
-  CONSTRAINT `fk_promotions_article` FOREIGN KEY (`reference_id`) REFERENCES `article` (`article_id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_promotions_category` FOREIGN KEY (`reference_id`) REFERENCES `category` (`category_id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_promotions_department` FOREIGN KEY (`reference_id`) REFERENCES `department` (`department_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE `sales_analytics` (
-  `analytics_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `article_id` INT(10) UNSIGNED NOT NULL,
-  `order_id` INT(10) UNSIGNED NOT NULL,
-  `quantity` INT(10) UNSIGNED NOT NULL,
-  `total_price` DECIMAL(10,2) NOT NULL,
-  `sale_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`analytics_id`),
-  CONSTRAINT `fk_sales_analytics_article` FOREIGN KEY (`article_id`) REFERENCES `article` (`article_id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_sales_analytics_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE `user_activity` (
-  `activity_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `user_id` INT(10) UNSIGNED NOT NULL,
-  `activity_type` ENUM('view', 'add_to_cart', 'purchase', 'review') NOT NULL,
-  `reference_id` INT(10) UNSIGNED DEFAULT NULL, -- Links to the article, order, or review
-  `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`activity_id`),
-  CONSTRAINT `fk_user_activity_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_user_activity_article` FOREIGN KEY (`reference_id`) REFERENCES `article` (`article_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE `discount_coupons` (
-  `coupon_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `code` VARCHAR(50) NOT NULL UNIQUE,
-  `description` TEXT DEFAULT NULL,
-  `discount_percentage` DECIMAL(5,2) NOT NULL CHECK (`discount_percentage` BETWEEN 0 AND 100),
-  `max_uses` INT(10) UNSIGNED NOT NULL DEFAULT 1, -- How many times the coupon can be used
-  `used_count` INT(10) UNSIGNED NOT NULL DEFAULT 0, -- Tracks current usage
-  `valid_from` DATETIME NOT NULL,
-  `valid_until` DATETIME NOT NULL,
-  PRIMARY KEY (`coupon_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-ALTER TABLE `orders`
-ADD COLUMN `coupon_id` INT(10) UNSIGNED DEFAULT NULL,
-ADD CONSTRAINT `fk_orders_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `discount_coupons` (`coupon_id`) ON DELETE SET NULL;
-
-CREATE TABLE `inventory` (
-  `article_id` INT(10) UNSIGNED NOT NULL,
-  `stock_quantity` INT(10) UNSIGNED NOT NULL DEFAULT 0,
-  `reorder_level` INT(10) UNSIGNED NOT NULL DEFAULT 10, -- Minimum stock before restocking
-  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`article_id`),
-  CONSTRAINT `fk_inventory_article` FOREIGN KEY (`article_id`) REFERENCES `article` (`article_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE `refunds` (
-  `refund_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `order_id` INT(10) UNSIGNED NOT NULL,
-  `user_id` INT(10) UNSIGNED NOT NULL,
-  `reason` TEXT NOT NULL,
-  `status` ENUM('requested', 'approved', 'rejected', 'processed') DEFAULT 'requested',
-  `requested_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `processed_at` TIMESTAMP DEFAULT NULL,
-  PRIMARY KEY (`refund_id`),
-  CONSTRAINT `fk_refunds_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_refunds_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE `notifications` (
-  `notification_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `user_id` INT(10) UNSIGNED NOT NULL,
-  `message` TEXT NOT NULL,
-  `is_read` BOOLEAN NOT NULL DEFAULT 0,
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`notification_id`),
-  CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Drop foreign key constraints from `category_article` table
-ALTER TABLE `category_article` DROP FOREIGN KEY `category_article_ibfk_2`;
-
--- Drop foreign key constraints from `sales_analytics` table
-ALTER TABLE `sales_analytics` DROP FOREIGN KEY `fk_sales_analytics_article`;
-
--- Drop foreign key constraints from `user_activity` table
-ALTER TABLE `user_activity` DROP FOREIGN KEY `fk_user_activity_article`;
-
--- Drop foreign key constraints from `inventory` table
-ALTER TABLE `inventory` DROP FOREIGN KEY `fk_inventory_article`;
