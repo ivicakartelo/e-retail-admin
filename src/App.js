@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { DepartmentsList } from './features/departments/DepartmentsList';
 import { CategoriesList } from './features/categories/CategoriesList';
 import { ArticlesList } from './features/articles/ArticlesList';
+import { UsersList } from './features/users/UsersList';
 import './App.css';
 
 const App = () => {
@@ -24,6 +25,8 @@ const App = () => {
                 return <CategoriesList />;
             case 'Articles':
                 return <ArticlesList />;
+            case 'Users':
+                return <UsersList />;
             default:
                 return <DepartmentsList />;
         }
@@ -57,6 +60,12 @@ const App = () => {
                         className={activeTab === 'Articles' ? 'active' : ''}
                     >
                         Articles
+                    </li>
+                    <li
+                        onClick={() => handleTabClick('Users')}
+                        className={activeTab === 'Users' ? 'active' : ''}
+                    >
+                        Users
                     </li>
                 </ul>
             </nav>

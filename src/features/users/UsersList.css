@@ -1,0 +1,134 @@
+/* Container for the entire user management section */
+.users-container {
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.users-container h2 {
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    color: #333;
+    text-align: center;
+}
+
+/* Add User button */
+.users-container button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-bottom: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.users-container button:hover {
+    background-color: #218838;
+}
+
+.users-container button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Users list section */
+.users-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Three equal columns */
+    gap: 20px;
+}
+
+@media (max-width: 1024px) {
+    .users-list {
+        grid-template-columns: repeat(2, 1fr); /* Two columns for medium screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .users-list {
+        grid-template-columns: 1fr; /* Single column for small screens */
+    }
+}
+
+/* Individual user card */
+.user-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.user-card h3 {
+    font-size: 1.4em;
+    margin-bottom: 10px;
+    color: #007bff;
+}
+
+.user-card p {
+    font-size: 1em;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+/* Buttons for update and delete */
+.button-update,
+.button-delete {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.button-update {
+    background-color: #007bff;
+    color: white;
+}
+
+.button-update:hover {
+    background-color: #0056b3;
+}
+
+.button-delete {
+    background-color: red;
+    color: white;
+    margin-left: 10px;
+}
+
+.button-delete:hover {
+    background-color: darkred;
+}
+
+/* Add User Form container */
+.add-user-form {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading message styling */
+.users-container h2 {
+    font-size: 1.4em;
+    color: #555;
+    text-align: center;
+}
+
+.error-message {
+    color: red;
+    font-size: 1.2em;
+    text-align: center;
+}

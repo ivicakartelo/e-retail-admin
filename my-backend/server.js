@@ -467,3 +467,74 @@ app.delete('/articles/:id/remove-categories', (req, res) => {
         }
     );
 });
+
+// Users Routes
+
+// Get all users
+app.get('/users', (req, res) => {
+  db.query('SELECT * FROM users', (error, results) => {
+      if (error) {
+          console.error('Database error:', error);
+          return res.status(500).json({ error });
+      }
+      res.status(200).json(results);
+  });
+});
+
+// Add a new user
+app.post('/users', (req, res) => {
+  const { name, email, password, role } = req.body;
+
+  if (!name || !email || !password || !role) {
+      console.error('Missing required fields: name, email, password, or role');
+      return res.status(400).json({ error: 'Name, email, password, and role are required.' });
+  }
+
+  db.query(
+      'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+      [name, email, password, role],
+      (error, results) => {
+          if (error) {
+              console.error('Database error:', error);
+              return res.status(500).json({ error });
+          }
+          res.status(201).json({ user_id: results.insertId, name, email, role });
+      }
+  );
+});
+
+// Update an existing user
+app.put('/users/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, email, role } = req.body;
+
+  if (!name || !email || !role) {
+      console.error('Missing required fields: name, email, or role');
+      return res.status(400).json({ error: 'Name, email, and role are required.' });
+  }
+
+  db.query(
+      'UPDATE users SET name = ?, email = ?, role = ? WHERE user_id = ?',
+      [name, email, role, id],
+      (error, results) => {
+          if (error) {
+              console.error('Database error:', error);
+              return res.status(500).json({ error });
+          }
+          res.status(204).end();
+      }
+  );
+});
+
+// Delete a user
+app.delete('/users/:id', (req, res) => {
+  const { id } = req.params;
+
+  db.query('DELETE FROM users WHERE user_id = ?', [id], (error, results) => {
+      if (error) {
+          console.error('Database error:', error);
+          return res.status(500).json({ error });
+      }
+      res.status(204).end();
+  });
+});
