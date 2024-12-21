@@ -31,6 +31,7 @@ CREATE TABLE `article` (
   `image_2` VARCHAR(50) DEFAULT NULL,
   `promotion_at_homepage_level` VARCHAR(1) NOT NULL,
   `promotion_at_department_level` VARCHAR(1) NOT NULL,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL, -- Soft delete column
   PRIMARY KEY (`article_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -125,16 +126,29 @@ CREATE TABLE `users` (
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+INSERT INTO `users` (`name`, `email`, `password`, `role`)
+VALUES
+('Alice Johnson', 'alice.johnson@example.com', 'password_hash_1', 'customer'),
+('Bob Smith', 'bob.smith@example.com', 'password_hash_2', 'customer'),
+('Charlie Brown', 'charlie.brown@example.com', 'password_hash_3', 'customer'),
+('Diana Prince', 'diana.prince@example.com', 'password_hash_4', 'customer'),
+('Ethan Hunt', 'ethan.hunt@example.com', 'password_hash_5', 'customer'),
+('Fiona Gallagher', 'fiona.gallagher@example.com', 'password_hash_6', 'customer'),
+('George Taylor', 'george.taylor@example.com', 'password_hash_7', 'admin'),
+('Hannah Lee', 'hannah.lee@example.com', 'password_hash_8', 'customer'),
+('Ian Wright', 'ian.wright@example.com', 'password_hash_9', 'customer'),
+('Julia Roberts', 'julia.roberts@example.com', 'password_hash_10', 'admin');
+
 CREATE TABLE `orders` (
   `order_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT(10) UNSIGNED NOT NULL,
   `order_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `status` ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
   `total_amount` DECIMAL(10,2) NOT NULL,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL, -- Soft delete column
   PRIMARY KEY (`order_id`),
   CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 CREATE TABLE `order_items` (
   `order_item_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `order_id` INT(10) UNSIGNED NOT NULL,

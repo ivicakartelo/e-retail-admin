@@ -4,6 +4,7 @@
     background-color: #f9f9f9;
 }
 
+/* Header for the user management section */
 .users-container h2 {
     margin-bottom: 20px;
     font-size: 1.8em;
@@ -11,7 +12,7 @@
     text-align: center;
 }
 
-/* Add User button */
+/* Add User button styling */
 .users-container button {
     background-color: #28a745;
     color: white;
@@ -35,26 +36,28 @@
     cursor: not-allowed;
 }
 
-/* Users list section */
+/* Users list section with responsive grid layout */
 .users-list {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Three equal columns */
+    grid-template-columns: repeat(3, 1fr); /* Default: Four equal columns */
     gap: 20px;
 }
 
+/* Medium screen adjustment (tablet) */
 @media (max-width: 1024px) {
     .users-list {
         grid-template-columns: repeat(2, 1fr); /* Two columns for medium screens */
     }
 }
 
+/* Small screen adjustment (mobile) */
 @media (max-width: 768px) {
     .users-list {
         grid-template-columns: 1fr; /* Single column for small screens */
     }
 }
 
-/* Individual user card */
+/* Individual user card styling */
 .user-card {
     background: #fff;
     border: 1px solid #ddd;
@@ -81,7 +84,7 @@
     margin-bottom: 10px;
 }
 
-/* Buttons for update and delete */
+/* Buttons for updating and deleting users */
 .button-update,
 .button-delete {
     padding: 8px 12px;
@@ -89,6 +92,7 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .button-update {
@@ -110,7 +114,7 @@
     background-color: darkred;
 }
 
-/* Add User Form container */
+/* Add User Form container styling */
 .add-user-form {
     background: #fff;
     border: 1px solid #ddd;
