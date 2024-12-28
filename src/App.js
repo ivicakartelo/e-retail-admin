@@ -3,6 +3,8 @@ import { DepartmentsList } from './features/departments/DepartmentsList';
 import { CategoriesList } from './features/categories/CategoriesList';
 import { ArticlesList } from './features/articles/ArticlesList';
 import { UsersList } from './features/users/UsersList';
+import { OrdersList } from './features/orders/OrdersList';
+import { OrderItemsList } from './features/orderitems/OrderItemsList';
 import './App.css';
 
 const App = () => {
@@ -27,6 +29,10 @@ const App = () => {
                 return <ArticlesList />;
             case 'Users':
                 return <UsersList />;
+            case 'Orders':
+                return <OrdersList />;
+            case 'OrderItems':
+                return <OrderItemsList />;
             default:
                 return <DepartmentsList />;
         }
@@ -66,6 +72,18 @@ const App = () => {
                         className={activeTab === 'Users' ? 'active' : ''}
                     >
                         Users
+                    </li>
+                    <li
+                        onClick={() => handleTabClick('Orders')}
+                        className={activeTab === 'Orders' ? 'active' : ''}
+                    >
+                        Orders
+                    </li>
+                    <li
+                        onClick={() => handleTabClick('OrderItems')}
+                        className={activeTab === 'OrderItems' ? 'active' : ''}
+                    >
+                        OrderItems
                     </li>
                 </ul>
             </nav>

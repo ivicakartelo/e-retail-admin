@@ -50,6 +50,7 @@ CREATE TABLE `category` (
   `department_id` INT(11) NOT NULL,
   `name` VARCHAR(50) NOT NULL,
   `description` TEXT DEFAULT NULL,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL, -- Soft delete column
   PRIMARY KEY (`category_id`),
   KEY `department_id` (`department_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -86,6 +87,7 @@ CREATE TABLE `department` (
   `department_id` INT(11) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL DEFAULT '',
   `description` TEXT DEFAULT NULL,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL, -- Soft delete column
   PRIMARY KEY (`department_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -149,6 +151,15 @@ CREATE TABLE `orders` (
   PRIMARY KEY (`order_id`),
   CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `orders` (`user_id`, `order_date`, `status`, `total_amount`)
+VALUES
+(1, NOW(), 'pending', 59.99), 
+(2, NOW(), 'processing', 120.50),
+(3, NOW(), 'shipped', 89.25),
+(4, NOW(), 'delivered', 45.00),
+(5, NOW(), 'cancelled', 200.00);
+
 CREATE TABLE `order_items` (
   `order_item_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `order_id` INT(10) UNSIGNED NOT NULL,

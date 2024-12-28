@@ -538,3 +538,192 @@ app.delete('/users/:id', (req, res) => {
       res.status(204).end();
   });
 });
+
+// Get all orders
+app.get('/orders', (req, res) => {
+  db.query('SELECT * FROM orders WHERE deleted_at IS NULL', (error, results) => {
+    if (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({ error });
+    }
+    res.status(200).json(results);
+  });
+});
+
+// Add a new order
+app.post('/orders', (req, res) => {
+  const { user_id, status, total_amount } = req.body;
+
+  if (!user_id || !total_amount) {
+    console.error('Missing required fields: user_id or total_amount');
+    return res.status(400).json({ error: 'User ID and total amount are required.' });
+  }
+
+  db.query(
+    'INSERT INTO orders (user_id, status, total_amount) VALUES (?, ?, ?)',
+    [user_id, status || 'pending', total_amount],
+    (error, results) => {
+      if (error) {
+        console.error('Database error:', error);
+        return res.status(500).json({ error });
+      }
+      res.status(201).json({ order_id: results.insertId, user_id, status: status || 'pending', total_amount });
+    }
+  );
+});
+
+// Update an existing order
+app.put('/orders/:id', (req, res) => {
+  const { id } = req.params;
+  const { status, total_amount } = req.body;
+
+  if (!status && !total_amount) {
+    console.error('No fields provided to update.');
+    return res.status(400).json({ error: 'At least one field (status or total_amount) is required to update.' });
+  }
+
+  const fields = [];
+  const values = [];
+  if (status) {
+    fields.push('status = ?');
+    values.push(status);
+  }
+  if (total_amount) {
+    fields.push('total_amount = ?');
+    values.push(total_amount);
+  }
+  values.push(id);
+
+  const query = `UPDATE orders SET ${fields.join(', ')} WHERE order_id = ?`;
+
+  db.query(query, values, (error, results) => {
+    if (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({ error });
+    }
+    res.status(204).end();
+  });
+});
+
+// Soft delete an order
+app.delete('/orders/:id', (req, res) => {
+  const { id } = req.params;
+
+  db.query('UPDATE orders SET deleted_at = NOW() WHERE order_id = ?', [id], (error, results) => {
+    if (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({ error });
+    }
+    res.status(204).end();
+  });
+});
+
+// Restore a soft-deleted order (optional endpoint)
+app.put('/orders/restore/:id', (req, res) => {
+  const { id } = req.params;
+
+  db.query('UPDATE orders SET deleted_at = NULL WHERE order_id = ?', [id], (error, results) => {
+    if (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({ error });
+    }
+    res.status(204).end();
+  });
+});
+
+// Get all order items
+app.get('/order-items', (req, res) => {
+  db.query('SELECT * FROM order_items', (error, results) => {
+    if (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({ error });
+    }
+    res.status(200).json(results);
+  });
+});
+
+// Add a new order item
+app.post('/order-items', (req, res) => {
+  const { order_id, article_id, quantity, price } = req.body;
+
+  // Validate required fields
+  if (!order_id || !article_id || !quantity || !price) {
+    console.error('Missing required fields');
+    return res.status(400).json({ error: 'Order ID, Article ID, Quantity, and Price are required.' });
+  }
+
+  db.query(
+    'INSERT INTO order_items (order_id, article_id, quantity, price) VALUES (?, ?, ?, ?)',
+    [order_id, article_id, quantity, price],
+    (error, results) => {
+      if (error) {
+        console.error('Database error:', error);
+        return res.status(500).json({ error });
+      }
+      res.status(201).json({
+        order_item_id: results.insertId,
+        order_id,
+        article_id,
+        quantity,
+        price
+      });
+    }
+  );
+});
+
+// Update an existing order item
+app.put('/order-items/:id', (req, res) => {
+  const { id } = req.params; // Get the ID of the order item to update
+  const { quantity, price } = req.body; // Get the new quantity and/or price from the request body
+
+  // Validate that at least one field (quantity or price) is provided
+  if (!quantity && !price) {
+    console.error('No fields provided to update.');
+    return res.status(400).json({ error: 'At least one field (quantity or price) is required to update.' });
+  }
+
+  // Prepare the dynamic query based on provided fields
+  const fields = [];
+  const values = [];
+  if (quantity) {
+    fields.push('quantity = ?');
+    values.push(quantity);
+  }
+  if (price) {
+    fields.push('price = ?');
+    values.push(price);
+  }
+  values.push(id); // Add the ID as the last parameter for the WHERE clause
+
+  // Construct the SQL query
+  const query = `UPDATE order_items SET ${fields.join(', ')} WHERE order_item_id = ?`;
+
+  // Execute the query
+  db.query(query, values, (error, results) => {
+    if (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({ error }); // Return an error if the query fails
+    }
+
+    if (results.affectedRows === 0) {
+      // No rows updated means the order item ID was not found
+      return res.status(404).json({ error: 'Order item not found.' });
+    }
+
+    // Success - Return a 200 response with a success message
+    res.status(200).json({ message: 'Order item updated successfully.' });
+  });
+});
+
+// Delete an order item permanently
+app.delete('/order-items/:id', (req, res) => {
+  const { id } = req.params;
+
+  db.query('DELETE FROM order_items WHERE order_item_id = ?', [id], (error, results) => {
+    if (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({ error });
+    }
+    res.status(204).end();
+  });
+});

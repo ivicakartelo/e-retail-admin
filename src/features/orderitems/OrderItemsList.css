@@ -1,0 +1,129 @@
+/* Container for the Order Items List */
+.order-items-container {
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 800px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Heading */
+  .order-items-container h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  /* Add/Cancel Button */
+  .order-items-container button {
+    margin: 10px 0;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .order-items-container button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Disabled button styling */
+  .order-items-container button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  /* List of Order Items */
+  .order-items-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  /* Individual Order Item Card */
+  .order-item-card {
+    padding: 15px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  /* Order Item Heading */
+  .order-item-card h3 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  /* Order Item Details */
+  .order-item-card p {
+    font-size: 14px;
+    color: #555;
+    margin: 5px 0;
+  }
+  
+  /* Buttons for Update and Delete */
+  .order-item-card .button-update,
+  .order-item-card .button-delete {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Update Button */
+  .order-item-card .button-update {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .order-item-card .button-update:hover {
+    background-color: #218838;
+  }
+  
+  /* Delete Button */
+  .order-item-card .button-delete {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .order-item-card .button-delete:hover {
+    background-color: #c82333;
+  }
+  
+  /* Scrollable Add Form */
+  .order-items-container > div {
+    margin-top: 20px;
+    background-color: #f4f4f4;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  /* General Styling for Mobile */
+  @media (max-width: 600px) {
+    .order-items-container {
+      padding: 15px;
+    }
+  
+    .order-item-card {
+      padding: 10px;
+    }
+  
+    .order-items-container h2 {
+      font-size: 20px;
+    }
+  }  

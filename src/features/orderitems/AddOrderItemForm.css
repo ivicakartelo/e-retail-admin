@@ -1,0 +1,72 @@
+/* AddOrderItemForm Container */
+.add-order-item-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px auto;
+    max-width: 400px;
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Labels */
+  .add-order-item-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  
+  /* Inputs */
+  .add-order-item-form input {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+  }
+  
+  .add-order-item-form input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  /* Button */
+  .add-order-item-form button {
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-order-item-form button:hover {
+    background-color: #0056b3;
+  }
+  
+  .add-order-item-form button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  /* General Styling for Better Accessibility */
+  .add-order-item-form {
+    font-family: Arial, sans-serif;
+  }
+  
+  .add-order-item-form input[type="number"]::-webkit-inner-spin-button,
+  .add-order-item-form input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  .add-order-item-form input[type="number"] {
+    -moz-appearance: textfield;
+  }  
