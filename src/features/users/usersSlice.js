@@ -23,6 +23,7 @@ export const deleteUser = createAsyncThunk('users/deleteUser', async (id) => {
 });
 
 export const updateUser = createAsyncThunk('users/updateUser', async (updatedUser) => {
+  console.log("Updating user:", updatedUser); // Debugging
   const { user_id, ...data } = updatedUser;
   await axios.put(`http://localhost:5000/users/${user_id}`, data);
   return updatedUser;
@@ -52,12 +53,14 @@ const usersSlice = createSlice({
         state.users = state.users.filter((user) => user.user_id !== action.payload.id);
       })
       .addCase(updateUser.fulfilled, (state, action) => {
-        const { user_id, name, email, role } = action.payload;
+        const { user_id, name, email, role, delivery_address, billing_address } = action.payload;
         const existingUser = state.users.find((user) => user.user_id === user_id);
         if (existingUser) {
           existingUser.name = name;
           existingUser.email = email;
           existingUser.role = role;
+          existingUser.delivery_address = delivery_address;
+          existingUser.billing_address = billing_address;
         }
       });
   },

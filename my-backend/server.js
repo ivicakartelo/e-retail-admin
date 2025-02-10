@@ -133,11 +133,23 @@ app.put('/departments/:id', (req, res) => {
     });
 });
 app.delete('/departments/:id', (req, res) => {
-    const { id } = req.params;
-    db.query('DELETE FROM department WHERE department_id = ?', [id], (error, results) => {
-        if (error) return res.status(500).json({ error });
-        res.status(204).end();
-    });
+  const { id } = req.params;
+
+  // Update the deleted_at column to mark the record as deleted
+  db.query(
+      'UPDATE department SET deleted_at = NOW() WHERE department_id = ?', 
+      [id], 
+      (error, results) => {
+          if (error) return res.status(500).json({ error });
+
+          // Check if a row was affected (i.e., if the department_id exists)
+          if (results.affectedRows === 0) {
+              return res.status(404).json({ error: 'Department not found.' });
+          }
+
+          res.status(204).end(); // Return no content on successful deletion
+      }
+  );
 });
 
 // Categories Routes
@@ -158,11 +170,25 @@ app.post('/categories', (req, res) => {  // Corrected route definition
 });
 
 app.delete('/categories/:id', (req, res) => {
-    const { id } = req.params;
-    db.query('DELETE FROM category WHERE category_id = ?', [id], (error, results) => {
-        if (error) return res.status(500).json({ error });
-        res.status(204).end();
-    });
+  const { id } = req.params;
+
+  // Soft delete: set the `deleted_at` column to the current timestamp
+  db.query(
+      'UPDATE category SET deleted_at = NOW() WHERE category_id = ?', 
+      [id], 
+      (error, results) => {
+          if (error) {
+              return res.status(500).json({ error });
+          }
+
+          // Check if a row was affected (i.e., the category_id exists)
+          if (results.affectedRows === 0) {
+              return res.status(404).json({ error: 'Category not found.' });
+          }
+
+          res.status(204).end(); // Return no content on successful deletion
+      }
+  );
 });
 
 app.put('/categories/:id', (req, res) => {
@@ -414,14 +440,30 @@ app.put(
     }
 );
 
-// Delete an article
+// Soft delete an article
 app.delete('/articles/:id', (req, res) => {
-    const { id } = req.params;
-    db.query('DELETE FROM article WHERE article_id = ?', [id], (error, results) => {
-        if (error) return res.status(500).json({ error });
-        res.status(204).end();
-    });
+  const { id } = req.params;
+
+  // Soft delete: set the `deleted_at` column to the current timestamp
+  db.query(
+      'UPDATE article SET deleted_at = NOW() WHERE article_id = ?', 
+      [id], 
+      (error, results) => {
+          if (error) {
+              console.error('Database error:', error);
+              return res.status(500).json({ error });
+          }
+
+          // Check if the article exists (affectedRows > 0)
+          if (results.affectedRows === 0) {
+              return res.status(404).json({ error: 'Article not found.' });
+          }
+
+          res.status(204).end(); // Successfully soft-deleted the article
+      }
+  );
 });
+
 // New route to remove categories associated with an article
 app.delete('/articles/:id/remove-categories', (req, res) => {
     const articleId = req.params.id;
@@ -483,7 +525,7 @@ app.get('/users', (req, res) => {
 
 // Add a new user
 app.post('/users', (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, delivery_address, billing_address  } = req.body;
 
   if (!name || !email || !password || !role) {
       console.error('Missing required fields: name, email, password, or role');
@@ -492,37 +534,41 @@ app.post('/users', (req, res) => {
 
   db.query(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-      [name, email, password, role],
+      [name, email, password, role, delivery_address, billing_address],
       (error, results) => {
           if (error) {
               console.error('Database error:', error);
               return res.status(500).json({ error });
           }
-          res.status(201).json({ user_id: results.insertId, name, email, role });
+          res.status(201).json({ user_id: results.insertId, name, email, role, delivery_address, billing_address });
       }
   );
 });
 
 // Update an existing user
 app.put('/users/:id', (req, res) => {
+  console.log("Received data:", req.body); // Debugging line
   const { id } = req.params;
-  const { name, email, role } = req.body;
+  const { name, email, role, delivery_address, billing_address } = req.body;
 
-  if (!name || !email || !role) {
-      console.error('Missing required fields: name, email, or role');
-      return res.status(400).json({ error: 'Name, email, and role are required.' });
+  if (!name || !email || role === undefined || !delivery_address || !billing_address) {
+    console.error('Missing required fields: name, email, role, delivery_address, or billing_address');
+    return res.status(400).json({ error: 'Name, email, role, delivery address, and billing address are required.' });
   }
 
   db.query(
-      'UPDATE users SET name = ?, email = ?, role = ? WHERE user_id = ?',
-      [name, email, role, id],
-      (error, results) => {
-          if (error) {
-              console.error('Database error:', error);
-              return res.status(500).json({ error });
-          }
-          res.status(204).end();
+    'UPDATE users SET name = ?, email = ?, role = ?, delivery_address = ?, billing_address = ? WHERE user_id = ?', 
+    [name, email, role, delivery_address, billing_address, id],
+    (error, results) => {
+      if (error) {
+        console.error('Database error:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
       }
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      res.status(200).json({ message: 'User updated successfully' });
+    }
   );
 });
 
@@ -530,13 +576,24 @@ app.put('/users/:id', (req, res) => {
 app.delete('/users/:id', (req, res) => {
   const { id } = req.params;
 
-  db.query('DELETE FROM users WHERE user_id = ?', [id], (error, results) => {
-      if (error) {
-          console.error('Database error:', error);
-          return res.status(500).json({ error });
+  // Soft delete: set the `deleted_at` column to the current timestamp
+  db.query(
+      'UPDATE users SET deleted_at = NOW() WHERE user_id = ?', 
+      [id], 
+      (error, results) => {
+          if (error) {
+              console.error('Database error:', error);
+              return res.status(500).json({ error });
+          }
+
+          // Check if a row was affected (i.e., the user_id exists)
+          if (results.affectedRows === 0) {
+              return res.status(404).json({ error: 'User not found.' });
+          }
+
+          res.status(204).end(); // Return no content on successful deletion
       }
-      res.status(204).end();
-  });
+  );
 });
 
 // Get all orders

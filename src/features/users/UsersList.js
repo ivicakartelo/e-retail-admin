@@ -24,6 +24,8 @@ const UserExcerpt = ({ user, handleDeleteUser }) => {
       <h3>{user.name}</h3>
       <p>Email: {user.email}</p>
       <p>Role: {user.role}</p>
+      <p>Delivery Address: {user.delivery_address}</p>
+      <p>Billing Address: {user.billing_address}</p>
       {showEditForm ? (
         <div ref={editFormRef}>
           <UpdateUserForm user={user} setShowEditForm={setShowEditForm} />
