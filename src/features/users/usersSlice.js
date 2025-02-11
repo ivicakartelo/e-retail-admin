@@ -14,7 +14,11 @@ export const fetchUsers = createAsyncThunk('users/fetchUsers', async () => {
 
 export const addUser = createAsyncThunk('users/addUser', async (newUser) => {
   const response = await axios.post('http://localhost:5000/users', newUser);
-  return response.data;
+  
+  console.log(response.data)
+  return { user_id: response.data, ...newUser };
+  //return response.data;
+  
 });
 
 export const deleteUser = createAsyncThunk('users/deleteUser', async (id) => {

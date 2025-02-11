@@ -109,7 +109,7 @@ app.post('/departments', (req, res) => {
         if (error) { 
             return res.status(500).json({ error });
         }
-        res.status(201).json({ department_id: results.insertId, name, description });
+        res.status(201).json({ department_id: results.insertId });
     });
 });
 
@@ -540,7 +540,7 @@ app.post('/users', (req, res) => {
               console.error('Database error:', error);
               return res.status(500).json({ error });
           }
-          res.status(201).json({ user_id: results.insertId, name, email, role, delivery_address, billing_address });
+          res.status(201).json({ user_id: results.insertId  });
       }
   );
 });
