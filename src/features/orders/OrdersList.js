@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchOrders, deleteOrder } from './ordersSlice';
+import { fetchOrders, deleteOrder, updateOrderStatus } from './ordersSlice';
 import { AddOrderForm } from './AddOrderForm';
 import { UpdateOrderForm } from './UpdateOrderForm';
 import './OrdersList.css';
 
+// OrderExcerpt Component - Displays each order
 const OrderExcerpt = ({ order, handleDeleteOrder }) => {
   const [showEditForm, setShowEditForm] = useState(false);
+  const [newStatus, setNewStatus] = useState(order.status);
+  const dispatch = useDispatch();
   const editFormRef = useRef(null);
 
   const handleUpdate = () => {
@@ -19,11 +22,25 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
     }
   }, [showEditForm]);
 
+  // Handle status update
+  const handleStatusChange = async () => {
+    await dispatch(updateOrderStatus({ order_id: order.order_id, status: newStatus }));
+  };
+
   return (
     <div className="order-card">
       <h3>Order #{order.order_id}</h3>
       <p>User ID: {order.user_id}</p>
-      <p>Status: {order.status}</p>
+      <p>
+        Status: 
+        <select value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+        </select>
+        <button onClick={handleStatusChange} className="button-update">Update Status</button>
+      </p>
       <p>Total Amount: ${order.total_amount}</p>
       {showEditForm ? (
         <div ref={editFormRef}>
@@ -31,9 +48,7 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
         </div>
       ) : (
         <>
-          <button onClick={handleUpdate} className="button-update">
-            Update
-          </button>
+          <button onClick={handleUpdate} className="button-update">Update</button>
           <button
             onClick={() => handleDeleteOrder(order.order_id)}
             className="button-delete"
@@ -47,6 +62,7 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
   );
 };
 
+// OrdersList Component - Displays the list of orders
 export const OrdersList = () => {
   const dispatch = useDispatch();
   const orders = useSelector((state) => state.orders.orders);

@@ -11,6 +11,16 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use('/assets/images', express.static(path.join(__dirname, 'public/assets/images')));
 
+// Convert the callback style connection methods to promise-based
+const queryAsync = (sql, params) => {
+  return new Promise((resolve, reject) => {
+    db.query(sql, params, (err, results) => {
+      if (err) return reject(err);
+      resolve(results);
+    });
+  });
+};
+
 // Configure Multer to save images in the public/assets/images folder
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -783,4 +793,64 @@ app.delete('/order-items/:id', (req, res) => {
     }
     res.status(204).end();
   });
+});
+
+// Update order status (Admin)
+// Update order status
+app.put('/orders/update-status/:orderId', async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body; // Example: "processing", "shipped", "delivered"
+
+  try {
+    // Valid statuses that an order can have
+    const validStatuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'];
+
+    // Check if the provided status is valid
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    // Your SQL query to update the order status
+    const updateOrderQuery = "UPDATE orders SET status = ? WHERE order_id = ?";
+    
+    // Execute the query using queryAsync
+    await queryAsync(updateOrderQuery, [status, orderId]);
+
+    // Return success response
+    res.json({ message: 'Order status updated', orderId, status });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get all orders for Admin
+app.get('/orders/all-orders', async (req, res) => {
+  try {
+    // Query to get all orders ordered by order date
+    const selectAllOrdersQuery = 'SELECT * FROM orders ORDER BY order_date DESC';
+    
+    // Execute the query using queryAsync
+    const orders = await queryAsync(selectAllOrdersQuery);
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get user orders (Customer)
+app.get('/orders/user-orders/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    // Query to get orders by user ID, ordered by order date
+    const selectUserOrdersQuery = 'SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC';
+    
+    // Execute the query using queryAsync
+    const orders = await queryAsync(selectUserOrdersQuery, [userId]);
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
