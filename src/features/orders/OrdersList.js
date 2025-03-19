@@ -45,10 +45,32 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
       a.click();
       document.body.removeChild(a);
       
-      // Replace alert with a small notification (better UX)
       alert(`Invoice #${order.order_id} downloaded.`);
     } catch (error) {
       console.error("Error downloading invoice:", error);
+    }
+  };
+
+  // Fetch and download delivery address label PDF
+  const handleDownloadLabel = async () => {
+    try {
+      console.log("Downloading label for Order ID:", order.order_id);
+      alert(`Label for Order #${order.order_id} downloading.`);
+      const response = await fetch(`http://localhost:5000/label/${order.order_id}`, { cache: "no-store" });
+      if (!response.ok) throw new Error("Failed to download label");
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `label_${order.order_id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      alert(`Label for Order #${order.order_id} downloaded.`);
+    } catch (error) {
+      console.error("Error downloading label:", error);
     }
   };
 
@@ -80,6 +102,9 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
           </button>
           <button onClick={handleDownloadInvoice} className="button-invoice">
             Invoice
+          </button>
+          <button onClick={handleDownloadLabel} className="button-label">
+            Label for Delivery Address
           </button>
         </>
       )}

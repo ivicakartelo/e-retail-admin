@@ -970,3 +970,49 @@ app.get('/invoice/:orderId', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+// New route for delivery address label
+app.get('/label/:orderId', async (req, res) => {
+  const { orderId } = req.params;
+  console.log(`Generating label for order ID: ${orderId}`);
+
+  try {
+    // Fetch order details
+    const orderRows = await queryAsync(
+      `SELECT o.*, 
+              u.delivery_name, u.delivery_street, u.delivery_city, u.delivery_state, u.delivery_country, u.delivery_zip_code
+       FROM orders o
+       JOIN users u ON o.user_id = u.user_id
+       WHERE o.order_id = ?`,
+      [orderId]
+    );
+
+    if (orderRows.length === 0) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const order = orderRows[0];
+
+    // Set headers for inline PDF display
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="label_${orderId}.pdf"`);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    // Create PDF document and pipe directly to response
+    const pdfDoc = new PDFDocument({ size: 'A6' }); // Smaller size for labels
+    pdfDoc.pipe(res);
+
+    // Add delivery address to PDF
+    pdfDoc.fontSize(14).text('Delivery Address:', { underline: true });
+    pdfDoc.fontSize(12).text(`${order.delivery_name}`);
+    pdfDoc.text(`${order.delivery_street}`);
+    pdfDoc.text(`${order.delivery_city}, ${order.delivery_state}, ${order.delivery_country} ${order.delivery_zip_code}`);
+    pdfDoc.end();
+
+  } catch (error) {
+    console.error('Error generating label:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
