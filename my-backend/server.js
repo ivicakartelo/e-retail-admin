@@ -860,7 +860,7 @@ app.get('/invoice/:orderId', async (req, res) => {
   console.log(`Generating invoice for order ID: ${orderId}`);
 
   try {
-    // Fetch order details along with customer information and address
+    // Fetch order details
     const orderRows = await queryAsync(
       `SELECT o.*, 
               u.name AS user_name, 
@@ -888,7 +888,7 @@ app.get('/invoice/:orderId', async (req, res) => {
       [orderId]
     );
 
-    // Ensure owner company exists in database
+    // Ensure owner company exists
     await queryAsync(`
       CREATE TABLE IF NOT EXISTS owner_company (
         company_id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -903,7 +903,6 @@ app.get('/invoice/:orderId', async (req, res) => {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
     `);
 
-    // Insert sample data if not exists
     await queryAsync(`
       INSERT INTO owner_company (name, address, email, phone, website) 
       SELECT * FROM (SELECT 'E-Retail Inc.', '123 Commerce St, Online City, EC 45678', 'contact@e-retail.com', '+1234567890', 'https://www.e-retail.com') AS tmp
@@ -919,47 +918,43 @@ app.get('/invoice/:orderId', async (req, res) => {
       return res.status(500).json({ message: 'Owner company details missing in database' });
     }
 
-    // Invoice file path
-    const invoiceDir = './invoices';
-    if (!fs.existsSync(invoiceDir)) fs.mkdirSync(invoiceDir, { recursive: true });
-    const filePath = path.join(invoiceDir, `invoice_${orderId}.pdf`);
-    
-    // Create PDF document
+    // Set headers for inline PDF display
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="invoice_${orderId}.pdf"`);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    // Create PDF document and pipe directly to response
     const pdfDoc = new PDFDocument();
-    const writeStream = fs.createWriteStream(filePath);
-    pdfDoc.pipe(writeStream);
-    
-    // Owner company details
+    pdfDoc.pipe(res);
+
+    // Add content to PDF
     pdfDoc.fontSize(16).text(owner.name, { align: 'center' });
     pdfDoc.fontSize(12).text(owner.address, { align: 'center' });
     pdfDoc.text(`Email: ${owner.email} | Phone: ${owner.phone} | Website: ${owner.website}`, { align: 'center' });
     pdfDoc.moveDown();
     
-    // Invoice details
     pdfDoc.fontSize(18).text(`Invoice #${order.order_id}`, { align: 'center' });
     pdfDoc.moveDown();
     
-    // Customer details
     pdfDoc.fontSize(12).text(`Customer: ${order.user_name} (${order.user_email})`);
     pdfDoc.text(`Order Date: ${new Date(order.order_date).toLocaleDateString()}`);
     pdfDoc.text(`Status: ${order.status}`);
     pdfDoc.moveDown();
     
-    // Delivery address
     pdfDoc.fontSize(12).text('Delivery Address:', { underline: true });
     pdfDoc.text(`${order.delivery_name}`);
     pdfDoc.text(`${order.delivery_street}`);
     pdfDoc.text(`${order.delivery_city}, ${order.delivery_state}, ${order.delivery_country} ${order.delivery_zip_code}`);
     pdfDoc.moveDown();
 
-    // Billing address
     pdfDoc.fontSize(12).text('Billing Address:', { underline: true });
     pdfDoc.text(`${order.billing_name}`);
     pdfDoc.text(`${order.billing_street}`);
     pdfDoc.text(`${order.billing_city}, ${order.billing_state}, ${order.billing_country} ${order.billing_zip_code}`);
     pdfDoc.moveDown();
 
-    // Order items
     pdfDoc.fontSize(14).text('Order Items:', { underline: true });
     items.forEach(item => {
       const totalPrice = item.quantity * parseFloat(item.price);
@@ -967,20 +962,8 @@ app.get('/invoice/:orderId', async (req, res) => {
     });
     pdfDoc.moveDown();
     
-    // Total Amount
     pdfDoc.fontSize(14).text(`Total Amount: $${parseFloat(order.total_amount).toFixed(2)}`, { bold: true });
     pdfDoc.end();
-    
-    // Handle PDF generation and download
-    pdfDoc.on('finish', () => {
-      console.log("Invoice generated successfully.");
-      res.download(filePath, `invoice_${orderId}.pdf`, (err) => {
-        if (err) {
-          console.error("Download error:", err);
-          res.status(500).json({ message: "Failed to download invoice" });
-        }
-      });
-    });
 
   } catch (error) {
     console.error('Error generating invoice:', error);
