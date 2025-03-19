@@ -857,13 +857,15 @@ app.get('/orders/user-orders/:userId', async (req, res) => {
 
 app.get('/invoice/:orderId', async (req, res) => {
   const { orderId } = req.params;
-console.log(orderId)
+  console.log(`Generating invoice for order ID: ${orderId}`);
+
   try {
+    // Fetch order details along with customer information
     const orderRows = await queryAsync(
-      `SELECT orders.*, users.name AS user_name, users.email AS user_email 
-       FROM orders 
-       JOIN users ON orders.user_id = users.user_id 
-       WHERE orders.order_id = ?`,
+      `SELECT o.*, u.name AS user_name, u.email AS user_email
+       FROM orders o
+       JOIN users u ON o.user_id = u.user_id
+       WHERE o.order_id = ?`,
       [orderId]
     );
 
@@ -872,60 +874,86 @@ console.log(orderId)
     }
 
     const order = orderRows[0];
+    
+    // Fetch order items
     const items = await queryAsync(
-      `SELECT order_items.*, article.name AS article_name 
-       FROM order_items 
-       JOIN article ON order_items.article_id = article.article_id 
-       WHERE order_items.order_id = ?`,
+      `SELECT oi.*, a.name AS article_name 
+       FROM order_items oi
+       JOIN article a ON oi.article_id = a.article_id 
+       WHERE oi.order_id = ?`,
       [orderId]
     );
 
-    const invoiceDir = './invoices';
-    if (!fs.existsSync(invoiceDir)) {
-      fs.mkdirSync(invoiceDir, { recursive: true });
+    // Ensure owner company exists in database
+    await queryAsync(`
+      CREATE TABLE IF NOT EXISTS owner_company (
+        company_id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL,
+        address TEXT NOT NULL,
+        email VARCHAR(100) NOT NULL UNIQUE,
+        phone VARCHAR(20) NOT NULL,
+        website VARCHAR(100) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (company_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    `);
+
+    // Insert sample data if not exists
+    await queryAsync(`
+      INSERT INTO owner_company (name, address, email, phone, website) 
+      SELECT * FROM (SELECT 'E-Retail Inc.', '123 Commerce St, Online City, EC 45678', 'contact@e-retail.com', '+1234567890', 'https://www.e-retail.com') AS tmp
+      WHERE NOT EXISTS (
+        SELECT 1 FROM owner_company
+      ) LIMIT 1;
+    `);
+
+    const ownerData = await queryAsync("SELECT * FROM owner_company LIMIT 1");
+    const owner = ownerData[0] || {};
+
+    if (!owner.company_id) {
+      return res.status(500).json({ message: 'Owner company details missing in database' });
     }
 
+    // Invoice file path
+    const invoiceDir = './invoices';
+    if (!fs.existsSync(invoiceDir)) fs.mkdirSync(invoiceDir, { recursive: true });
     const filePath = path.join(invoiceDir, `invoice_${orderId}.pdf`);
-    console.log("Saving invoice to: ", filePath); // Logging the file path
-
+    
+    // Create PDF document
     const pdfDoc = new PDFDocument();
     const writeStream = fs.createWriteStream(filePath);
-    
-    // Handle errors during the write process
-    writeStream.on('error', (err) => {
-      console.error("File write error:", err);
-      return res.status(500).json({ message: 'Failed to write invoice file' });
-    });
-
     pdfDoc.pipe(writeStream);
-
+    
+    // Owner company details
+    pdfDoc.fontSize(16).text(owner.name, { align: 'center' });
+    pdfDoc.fontSize(12).text(owner.address, { align: 'center' });
+    pdfDoc.text(`Email: ${owner.email} | Phone: ${owner.phone} | Website: ${owner.website}`, { align: 'center' });
+    pdfDoc.moveDown();
+    
+    // Invoice details
     pdfDoc.fontSize(18).text(`Invoice #${order.order_id}`, { align: 'center' });
     pdfDoc.moveDown();
+    
+    // Customer details
     pdfDoc.fontSize(12).text(`Customer: ${order.user_name} (${order.user_email})`);
     pdfDoc.text(`Order Date: ${new Date(order.order_date).toLocaleDateString()}`);
     pdfDoc.text(`Status: ${order.status}`);
     pdfDoc.moveDown();
-
+    
+    // Order items
     pdfDoc.fontSize(14).text('Order Items:', { underline: true });
-    
     items.forEach(item => {
-      console.log("Type of item.price:", typeof item.price, item.price);
-      item.price = Number(item.price); // Convert to number
-      console.log("Converted item.price:", typeof item.price, item.price);
-      
-      pdfDoc.text(`${item.article_name} - ${item.quantity} x $${item.price.toFixed(2)} = $${(item.quantity * item.price).toFixed(2)}`);
+      const totalPrice = item.quantity * parseFloat(item.price);
+      pdfDoc.text(`${item.article_name} - ${item.quantity} x $${parseFloat(item.price).toFixed(2)} = $${totalPrice.toFixed(2)}`);
     });
-
     pdfDoc.moveDown();
-
-    order.total_amount = Number(order.total_amount);
-    console.log("Converted order.total_amount:", typeof order.total_amount, order.total_amount);
-
-    pdfDoc.fontSize(14).text(`Total Amount: $${order.total_amount.toFixed(2)}`, { bold: true });
     
-    // Finalize the PDF and trigger download after writing is complete
+    // Total Amount
+    pdfDoc.fontSize(14).text(`Total Amount: $${parseFloat(order.total_amount).toFixed(2)}`, { bold: true });
     pdfDoc.end();
-
+    
+    // Handle PDF generation and download
     pdfDoc.on('finish', () => {
       console.log("Invoice generated successfully.");
       res.download(filePath, `invoice_${orderId}.pdf`, (err) => {
@@ -934,12 +962,6 @@ console.log(orderId)
           res.status(500).json({ message: "Failed to download invoice" });
         }
       });
-    });
-
-    // Optional: Handle errors during PDF generation
-    pdfDoc.on('error', (err) => {
-      console.error("Error during PDF generation:", err);
-      res.status(500).json({ message: 'Failed to generate PDF' });
     });
 
   } catch (error) {
