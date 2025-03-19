@@ -860,9 +860,13 @@ app.get('/invoice/:orderId', async (req, res) => {
   console.log(`Generating invoice for order ID: ${orderId}`);
 
   try {
-    // Fetch order details along with customer information
+    // Fetch order details along with customer information and address
     const orderRows = await queryAsync(
-      `SELECT o.*, u.name AS user_name, u.email AS user_email
+      `SELECT o.*, 
+              u.name AS user_name, 
+              u.email AS user_email,
+              u.delivery_name, u.delivery_street, u.delivery_city, u.delivery_state, u.delivery_country, u.delivery_zip_code,
+              u.billing_name, u.billing_street, u.billing_city, u.billing_state, u.billing_country, u.billing_zip_code
        FROM orders o
        JOIN users u ON o.user_id = u.user_id
        WHERE o.order_id = ?`,
@@ -941,6 +945,20 @@ app.get('/invoice/:orderId', async (req, res) => {
     pdfDoc.text(`Status: ${order.status}`);
     pdfDoc.moveDown();
     
+    // Delivery address
+    pdfDoc.fontSize(12).text('Delivery Address:', { underline: true });
+    pdfDoc.text(`${order.delivery_name}`);
+    pdfDoc.text(`${order.delivery_street}`);
+    pdfDoc.text(`${order.delivery_city}, ${order.delivery_state}, ${order.delivery_country} ${order.delivery_zip_code}`);
+    pdfDoc.moveDown();
+
+    // Billing address
+    pdfDoc.fontSize(12).text('Billing Address:', { underline: true });
+    pdfDoc.text(`${order.billing_name}`);
+    pdfDoc.text(`${order.billing_street}`);
+    pdfDoc.text(`${order.billing_city}, ${order.billing_state}, ${order.billing_country} ${order.billing_zip_code}`);
+    pdfDoc.moveDown();
+
     // Order items
     pdfDoc.fontSize(14).text('Order Items:', { underline: true });
     items.forEach(item => {
