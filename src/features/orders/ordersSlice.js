@@ -33,6 +33,7 @@ export const updateOrderStatus = createAsyncThunk(
   async ({ order_id, status }, { rejectWithValue }) => {
     try {
       const response = await axios.put(`http://localhost:5000/orders/update-status/${order_id}`, { status });
+      console.log(response.data)
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -75,10 +76,20 @@ const ordersSlice = createSlice({
       })
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
         const updatedOrder = action.payload;
-        const existingOrder = state.orders.find((order) => order.order_id === updatedOrder.order_id);
+        console.log(updatedOrder)
+
+        console.log("Updated Order ID:", updatedOrder.orderId, typeof updatedOrder.orderId);
+        console.log("Existing Order IDs:", state.orders.map(order => [order.order_id, typeof order.order_id]));
+
+        const existingOrder = state.orders.find(
+          (order) => String(order.order_id) === String(updatedOrder.orderId)
+      );
+        console.log(updatedOrder.orderId)
+        
         if (existingOrder) {
+          console.log(existingOrder)
           existingOrder.status = updatedOrder.status; // Update the status in Redux state
-        }
+          }
       })
       .addCase(updateOrderStatus.rejected, (state, action) => {
         state.error = action.payload || 'Failed to update order status';

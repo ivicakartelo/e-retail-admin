@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql2');
 const { validationResult, check } = require('express-validator'); // Fix: Import validation utilities
 const path = require('path');
+const PDFDocument = require('pdfkit');
 
 const app = express();
 app.use(cors());
@@ -796,7 +797,6 @@ app.delete('/order-items/:id', (req, res) => {
 });
 
 // Update order status (Admin)
-// Update order status
 app.put('/orders/update-status/:orderId', async (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body; // Example: "processing", "shipped", "delivered"
@@ -852,5 +852,98 @@ app.get('/orders/user-orders/:userId', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/invoice/:orderId', async (req, res) => {
+  const { orderId } = req.params;
+console.log(orderId)
+  try {
+    const orderRows = await queryAsync(
+      `SELECT orders.*, users.name AS user_name, users.email AS user_email 
+       FROM orders 
+       JOIN users ON orders.user_id = users.user_id 
+       WHERE orders.order_id = ?`,
+      [orderId]
+    );
+
+    if (orderRows.length === 0) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const order = orderRows[0];
+    const items = await queryAsync(
+      `SELECT order_items.*, article.name AS article_name 
+       FROM order_items 
+       JOIN article ON order_items.article_id = article.article_id 
+       WHERE order_items.order_id = ?`,
+      [orderId]
+    );
+
+    const invoiceDir = './invoices';
+    if (!fs.existsSync(invoiceDir)) {
+      fs.mkdirSync(invoiceDir, { recursive: true });
+    }
+
+    const filePath = path.join(invoiceDir, `invoice_${orderId}.pdf`);
+    console.log("Saving invoice to: ", filePath); // Logging the file path
+
+    const pdfDoc = new PDFDocument();
+    const writeStream = fs.createWriteStream(filePath);
+    
+    // Handle errors during the write process
+    writeStream.on('error', (err) => {
+      console.error("File write error:", err);
+      return res.status(500).json({ message: 'Failed to write invoice file' });
+    });
+
+    pdfDoc.pipe(writeStream);
+
+    pdfDoc.fontSize(18).text(`Invoice #${order.order_id}`, { align: 'center' });
+    pdfDoc.moveDown();
+    pdfDoc.fontSize(12).text(`Customer: ${order.user_name} (${order.user_email})`);
+    pdfDoc.text(`Order Date: ${new Date(order.order_date).toLocaleDateString()}`);
+    pdfDoc.text(`Status: ${order.status}`);
+    pdfDoc.moveDown();
+
+    pdfDoc.fontSize(14).text('Order Items:', { underline: true });
+    
+    items.forEach(item => {
+      console.log("Type of item.price:", typeof item.price, item.price);
+      item.price = Number(item.price); // Convert to number
+      console.log("Converted item.price:", typeof item.price, item.price);
+      
+      pdfDoc.text(`${item.article_name} - ${item.quantity} x $${item.price.toFixed(2)} = $${(item.quantity * item.price).toFixed(2)}`);
+    });
+
+    pdfDoc.moveDown();
+
+    order.total_amount = Number(order.total_amount);
+    console.log("Converted order.total_amount:", typeof order.total_amount, order.total_amount);
+
+    pdfDoc.fontSize(14).text(`Total Amount: $${order.total_amount.toFixed(2)}`, { bold: true });
+    
+    // Finalize the PDF and trigger download after writing is complete
+    pdfDoc.end();
+
+    pdfDoc.on('finish', () => {
+      console.log("Invoice generated successfully.");
+      res.download(filePath, `invoice_${orderId}.pdf`, (err) => {
+        if (err) {
+          console.error("Download error:", err);
+          res.status(500).json({ message: "Failed to download invoice" });
+        }
+      });
+    });
+
+    // Optional: Handle errors during PDF generation
+    pdfDoc.on('error', (err) => {
+      console.error("Error during PDF generation:", err);
+      res.status(500).json({ message: 'Failed to generate PDF' });
+    });
+
+  } catch (error) {
+    console.error('Error generating invoice:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });

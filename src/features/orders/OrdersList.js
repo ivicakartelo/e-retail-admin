@@ -25,6 +25,31 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
   // Handle status update
   const handleStatusChange = async () => {
     await dispatch(updateOrderStatus({ order_id: order.order_id, status: newStatus }));
+    alert('Status changed.');
+  };
+
+  // Fetch and download invoice PDF
+  const handleDownloadInvoice = async () => {
+    try {
+      console.log("Downloading invoice for Order ID:", order.order_id);
+      alert(`Invoice #${order.order_id} downloading.`);
+      const response = await fetch(`http://localhost:5000/invoice/${order.order_id}`, { cache: "no-store" });
+      if (!response.ok) throw new Error("Failed to download invoice");
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `invoice_${order.order_id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      // Replace alert with a small notification (better UX)
+      alert(`Invoice #${order.order_id} downloaded.`);
+    } catch (error) {
+      console.error("Error downloading invoice:", error);
+    }
   };
 
   return (
@@ -35,6 +60,7 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
         Status: 
         <select value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
           <option value="pending">Pending</option>
+          <option value="paid">Paid</option>
           <option value="processing">Processing</option>
           <option value="shipped">Shipped</option>
           <option value="delivered">Delivered</option>
@@ -49,12 +75,11 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
       ) : (
         <>
           <button onClick={handleUpdate} className="button-update">Update</button>
-          <button
-            onClick={() => handleDeleteOrder(order.order_id)}
-            className="button-delete"
-            style={{ backgroundColor: 'red', color: 'white' }}
-          >
+          <button onClick={() => handleDeleteOrder(order.order_id)} className="button-delete">
             Delete
+          </button>
+          <button onClick={handleDownloadInvoice} className="button-invoice">
+            Invoice
           </button>
         </>
       )}
@@ -66,6 +91,7 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
 export const OrdersList = () => {
   const dispatch = useDispatch();
   const orders = useSelector((state) => state.orders.orders);
+  console.log(orders)
   const status = useSelector((state) => state.orders.status);
   const error = useSelector((state) => state.orders.error);
 
