@@ -5,40 +5,18 @@ import { ArticlesList } from './features/articles/ArticlesList';
 import { UsersList } from './features/users/UsersList';
 import { OrdersList } from './features/orders/OrdersList';
 import { OrderItemsList } from './features/orderitems/OrderItemsList';
-import { CommentsList } from './features/comments/CommentsList';
 import './App.css';
 
 const App = () => {
     const [activeTab, setActiveTab] = useState('Departments');
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [selectedArticleId, setSelectedArticleId] = useState(null);
-    const [navigationHistory, setNavigationHistory] = useState(['Departments']);
 
     const handleTabClick = (tabName) => {
         setActiveTab(tabName);
-        setNavigationHistory(prev => [...prev, tabName]);
+        // Close sidebar after clicking an option on mobile view
         if (window.innerWidth <= 768) {
             setSidebarOpen(false);
         }
-    };
-
-    const handleArticleSelect = (articleId) => {
-        setSelectedArticleId(articleId);
-        handleTabClick('Comments');
-    };
-
-    const handleBack = () => {
-        if (navigationHistory.length > 1) {
-            const newHistory = [...navigationHistory];
-            newHistory.pop();
-            setNavigationHistory(newHistory);
-            setActiveTab(newHistory[newHistory.length - 1]);
-        }
-    };
-
-    const handleViewAllComments = () => {
-        setSelectedArticleId(null);
-        handleTabClick('Comments');
     };
 
     const renderContent = () => {
@@ -48,50 +26,13 @@ const App = () => {
             case 'Categories':
                 return <CategoriesList />;
             case 'Articles':
-                return (
-                    <>
-                        <button 
-                            onClick={handleViewAllComments}
-                            className="view-all-comments-button"
-                        >
-                            View All Comments
-                        </button>
-                        <ArticlesList onArticleSelect={handleArticleSelect} />
-                    </>
-                );
+                return <ArticlesList />;
             case 'Users':
                 return <UsersList />;
             case 'Orders':
                 return <OrdersList />;
             case 'OrderItems':
                 return <OrderItemsList />;
-            case 'Comments':
-                return (
-                    <div className="comments-view-container">
-                        <button 
-                            onClick={handleBack}
-                            className="back-button"
-                        >
-                            ← Back to {navigationHistory[navigationHistory.length - 2] || 'Dashboard'}
-                        </button>
-                        {selectedArticleId ? (
-                            <CommentsList 
-                                articleId={selectedArticleId} 
-                                onBackToList={() => handleTabClick('Articles')}
-                            />
-                        ) : (
-                            <div className="no-article-selected">
-                                <p>All Article Comments</p>
-                                <button 
-                                    onClick={() => handleTabClick('Articles')}
-                                    className="browse-articles-button"
-                                >
-                                    Browse Articles
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                );
             default:
                 return <DepartmentsList />;
         }
@@ -99,30 +40,53 @@ const App = () => {
 
     return (
         <div className="admin-container">
-            <button 
-                className="toggle-sidebar" 
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                aria-label="Toggle sidebar"
-            >
+            {/* Toggle button for mobile view */}
+            <button className="toggle-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}>
                 ☰
             </button>
 
+            {/* Conditional rendering for sidebar based on screen size */}
             <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <h2>Admin Panel</h2>
                 <ul>
-                    {['Departments', 'Categories', 'Articles', 'Users', 'Orders', 'OrderItems', 'Comments'].map((tab) => (
-                        <li
-                            key={tab}
-                            onClick={() => handleTabClick(tab)}
-                            className={activeTab === tab ? 'active' : ''}
-                            aria-current={activeTab === tab ? 'page' : undefined}
-                        >
-                            {tab}
-                        </li>
-                    ))}
+                    <li
+                        onClick={() => handleTabClick('Departments')}
+                        className={activeTab === 'Departments' ? 'active' : ''}
+                    >
+                        Departments
+                    </li>
+                    <li
+                        onClick={() => handleTabClick('Categories')}
+                        className={activeTab === 'Categories' ? 'active' : ''}
+                    >
+                        Categories
+                    </li>
+                    <li
+                        onClick={() => handleTabClick('Articles')}
+                        className={activeTab === 'Articles' ? 'active' : ''}
+                    >
+                        Articles
+                    </li>
+                    <li
+                        onClick={() => handleTabClick('Users')}
+                        className={activeTab === 'Users' ? 'active' : ''}
+                    >
+                        Users
+                    </li>
+                    <li
+                        onClick={() => handleTabClick('Orders')}
+                        className={activeTab === 'Orders' ? 'active' : ''}
+                    >
+                        Orders
+                    </li>
+                    <li
+                        onClick={() => handleTabClick('OrderItems')}
+                        className={activeTab === 'OrderItems' ? 'active' : ''}
+                    >
+                        OrderItems
+                    </li>
                 </ul>
             </nav>
-            
             <div className="main-content">
                 {renderContent()}
             </div>

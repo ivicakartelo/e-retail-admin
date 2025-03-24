@@ -32,7 +32,7 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
   const handleDownloadInvoice = async () => {
     try {
       console.log("Downloading invoice for Order ID:", order.order_id);
-      
+      alert(`Invoice #${order.order_id} downloading.`);
       const response = await fetch(`http://localhost:5000/invoice/${order.order_id}`, { cache: "no-store" });
       if (!response.ok) throw new Error("Failed to download invoice");
       
@@ -45,7 +45,8 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
       a.click();
       document.body.removeChild(a);
       
-      } catch (error) {
+      alert(`Invoice #${order.order_id} downloaded.`);
+    } catch (error) {
       console.error("Error downloading invoice:", error);
     }
   };
@@ -53,6 +54,8 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
   // Fetch and download delivery address label PDF
   const handleDownloadLabel = async () => {
     try {
+      console.log("Downloading label for Order ID:", order.order_id);
+      alert(`Label for Order #${order.order_id} downloading.`);
       const response = await fetch(`http://localhost:5000/label/${order.order_id}`, { cache: "no-store" });
       if (!response.ok) throw new Error("Failed to download label");
       
@@ -64,6 +67,8 @@ const OrderExcerpt = ({ order, handleDeleteOrder }) => {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      
+      alert(`Label for Order #${order.order_id} downloaded.`);
     } catch (error) {
       console.error("Error downloading label:", error);
     }
