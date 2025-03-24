@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -6,6 +7,43 @@ const mysql = require('mysql2');
 const { validationResult, check } = require('express-validator'); // Fix: Import validation utilities
 const path = require('path');
 const PDFDocument = require('pdfkit');
+
+const apiKey = process.env.GOOGLE_API_KEY;
+console.log('API Key:', apiKey);
+
+// Import the Google Generative AI library
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+
+// Initialize the Google AI client with your API key
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY); // Use GOOGLE_API_KEY from .env
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' }); // Use the corre
+
+// Define the recommendProducts function
+const recommendProducts = async ({ category }) => {
+  if (!category) {
+    console.error('Category is missing in request!');
+    return [];
+  }
+
+  console.log(`Requesting recommendations for: ${category}`);
+
+  try {
+    const prompt = `Suggest 3 popular products for the category: ${category}`;
+    const result = await model.generateContent(prompt); // Generate content using the model
+    const response = await result.response; // Get the response
+    const text = response.text(); // Extract the text
+
+    console.log('AI Response:', text);
+    return text.split('\n').filter((line) => line.trim() !== '');
+  } catch (error) {
+    console.error('Error fetching recommendations:', error);
+    return [];
+  }
+};
+
+// Export the function for use in Express
+module.exports = { recommendProducts };
 
 const app = express();
 app.use(cors());
@@ -1014,5 +1052,188 @@ app.get('/label/:orderId', async (req, res) => {
   } catch (error) {
     console.error('Error generating label:', error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// API Endpoint
+app.get('/recommend', async (req, res) => {
+  const category = req.query.category;
+  if (!category) {
+    console.error('❌ Category is missing in request!');
+    return res.status(400).json({ error: 'Category is required' });
+  }
+  try {
+    const recommendations = await recommendProducts({ category });
+    res.json({ recommendations });
+  } catch (error) {
+    console.error('❌ Error fetching recommendations:', error);
+    res.status(500).json({ error: 'Error while fetching recommendations' });
+  }
+});
+
+// Comments Routes
+app.get('/articles/:articleId/comments', async (req, res) => {
+  const { articleId } = req.params;
+  const { approvedOnly = 'true' } = req.query; // Default to showing only approved comments
+
+  try {
+    let query = `
+      SELECT c.*, u.name as user_name 
+      FROM article_comments c
+      JOIN users u ON c.user_id = u.user_id
+      WHERE c.article_id = ? 
+      AND c.deleted_at IS NULL
+    `;
+    
+    const params = [articleId];
+    
+    if (approvedOnly === 'true') {
+      query += ' AND c.is_approved = 1';
+    }
+
+    query += ' ORDER BY c.created_at DESC';
+
+    const [comments] = await db.promise().query(query, params);
+    res.status(200).json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ error: 'Failed to fetch comments' });
+  }
+});
+
+app.post('/articles/:articleId/comments', [
+  check('comment_text').notEmpty().withMessage('Comment text is required'),
+  check('user_id').isInt().withMessage('Valid user ID is required'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { articleId } = req.params;
+  const { comment_text, rating, user_id } = req.body;
+
+  try {
+    const [result] = await db.promise().query(
+      `INSERT INTO article_comments 
+      (article_id, user_id, comment_text, rating, is_approved) 
+      VALUES (?, ?, ?, ?, ?)`,
+      [articleId, user_id, comment_text, rating || null, 0] // Default to pending approval
+    );
+
+    // Get the newly created comment with user details
+    const [newComment] = await db.promise().query(`
+      SELECT c.*, u.name as user_name 
+      FROM article_comments c
+      JOIN users u ON c.user_id = u.user_id
+      WHERE c.comment_id = ?
+    `, [result.insertId]);
+
+    res.status(201).json(newComment[0]);
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    res.status(500).json({ error: 'Failed to add comment' });
+  }
+});
+
+// Validation middleware
+const validateCommentUpdate = (req, res, next) => {
+  const { comment_text } = req.body;
+  
+  if (!comment_text || comment_text.trim() === '') {
+    return res.status(400).json({ error: 'Comment text is required' });
+  }
+  
+  if (req.body.rating && (req.body.rating < 1 || req.body.rating > 5)) {
+    return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+  }
+  
+  next();
+};
+
+// In your Express routes (server-side)
+app.put('/articles/:articleId/comments/:commentId', async (req, res) => {
+  const { articleId, commentId } = req.params;
+  const { comment_text, rating } = req.body;
+
+  try {
+    const [result] = await db.promise().query(
+      `UPDATE article_comments 
+      SET comment_text = ?, rating = ?, updated_at = CURRENT_TIMESTAMP 
+      WHERE comment_id = ? AND article_id = ? AND deleted_at IS NULL`,
+      [comment_text, rating || null, commentId, articleId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    // Return the updated comment
+    const [updatedComment] = await db.promise().query(
+      `SELECT * FROM article_comments WHERE comment_id = ?`,
+      [commentId]
+    );
+    
+    res.status(200).json(updatedComment[0]);
+  } catch (error) {
+    console.error('Error updating comment:', error);
+    res.status(500).json({ error: 'Failed to update comment' });
+  }
+});
+
+app.patch('/articles/:articleId/comments/:commentId/approve', async (req, res) => {
+  const { articleId, commentId } = req.params;
+  const { approved } = req.body; // Should be boolean (true/false)
+
+  try {
+    await db.promise().query(
+      `UPDATE article_comments 
+      SET is_approved = ? 
+      WHERE comment_id = ? AND article_id = ? AND deleted_at IS NULL`,
+      [approved ? 1 : 0, commentId, articleId]
+    );
+
+    res.status(204).end();
+  } catch (error) {
+    console.error('Error approving comment:', error);
+    res.status(500).json({ error: 'Failed to update comment status' });
+  }
+});
+
+app.delete('/articles/:articleId/comments/:commentId', async (req, res) => {
+  const { articleId, commentId } = req.params;
+
+  try {
+    // Soft delete the comment
+    await db.promise().query(
+      `UPDATE article_comments 
+      SET deleted_at = CURRENT_TIMESTAMP 
+      WHERE comment_id = ? AND article_id = ? AND deleted_at IS NULL`,
+      [commentId, articleId]
+    );
+
+    res.status(204).end();
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.status(500).json({ error: 'Failed to delete comment' });
+  }
+});
+
+// Admin endpoint to get all pending comments
+app.get('/admin/comments/pending', async (req, res) => {
+  try {
+    const [comments] = await db.promise().query(`
+      SELECT c.*, u.name as user_name, a.name as article_name
+      FROM article_comments c
+      JOIN users u ON c.user_id = u.user_id
+      JOIN article a ON c.article_id = a.article_id
+      WHERE c.is_approved = 0 AND c.deleted_at IS NULL
+      ORDER BY c.created_at DESC
+    `);
+    
+    res.status(200).json(comments);
+  } catch (error) {
+    console.error('Error fetching pending comments:', error);
+    res.status(500).json({ error: 'Failed to fetch pending comments' });
   }
 });

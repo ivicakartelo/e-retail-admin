@@ -100,3 +100,25 @@ body {
     padding-top: 60px;
   }
 }
+
+.no-article-selected {
+  text-align: center;
+  padding: 2rem;
+  margin-top: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.no-article-selected button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.no-article-selected button:hover {
+  background-color: #0056b3;
+}
