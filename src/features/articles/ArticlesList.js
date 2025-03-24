@@ -8,7 +8,7 @@ import RemoveCategoryForm from './RemoveCategoryForm';
 import AssignNewCategoryForm from './AssignNewCategoryForm';
 import './ArticlesList.css';
 
-const ArticleExcerpt = ({ article, onViewComments }) => {
+const ArticleExcerpt = ({ article }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showRemoveCategoryForm, setShowRemoveCategoryForm] = useState(false);
   const [showAssignCategoryForm, setShowAssignCategoryForm] = useState(false);
@@ -53,6 +53,7 @@ const ArticleExcerpt = ({ article, onViewComments }) => {
       <p><strong>ID:</strong> {article.article_id}</p>
       <p>{article.description}</p>
 
+      {/* Safely display the price */}
       <p><strong>Price:</strong> 
         {article.price ? `$${Number(article.price).toFixed(2)}` : 'Price not available'}
       </p>
@@ -64,7 +65,7 @@ const ArticleExcerpt = ({ article, onViewComments }) => {
               ? `http://localhost:5000/assets/images/${article.image_1}`
               : '/assets/images/placeholder.jpg'
           }
-          alt={`${article.name}`}
+          alt={`${article.name} - image_1`}
         />
         <img
           src={
@@ -72,7 +73,7 @@ const ArticleExcerpt = ({ article, onViewComments }) => {
               ? `http://localhost:5000/assets/images/${article.image_2}`
               : '/assets/images/placeholder.jpg'
           }
-          alt={`${article.name}`}
+          alt={`${article.name} - image_2`}
         />
       </div>
 
@@ -85,24 +86,10 @@ const ArticleExcerpt = ({ article, onViewComments }) => {
         </div>
       ) : (
         <div className="article-actions">
-          <button onClick={handleUpdate} className="button-update">
-            Update
-          </button>
-          <button onClick={() => handleDeleteClick(article.article_id)} className="button-delete">
-            Delete
-          </button>
-          <button onClick={() => handleToggleForm('remove')} className="button-remove">
-            Remove Categories
-          </button>
-          <button onClick={() => handleToggleForm('assign')} className="button-assign">
-            Assign New Categories
-          </button>
-          <button 
-            onClick={() => onViewComments(article.article_id)} 
-            className="button-comments"
-          >
-            View Comments
-          </button>
+          <button onClick={handleUpdate} className="button-update">Update</button>
+          <button onClick={() => handleDeleteClick(article.article_id)} className="button-delete">Delete</button>
+          <button onClick={() => handleToggleForm('remove')} className="button-remove">Remove Categories</button>
+          <button onClick={() => handleToggleForm('assign')} className="button-assign">Assign New Categories</button>
         </div>
       )}
 
@@ -121,7 +108,7 @@ const ArticleExcerpt = ({ article, onViewComments }) => {
   );
 };
 
-export const ArticlesList = ({ onArticleSelect }) => {
+export const ArticlesList = () => {
   const dispatch = useDispatch();
   const articles = useSelector((state) => state.articles.articles);
   const status = useSelector((state) => state.articles.status);
@@ -150,25 +137,14 @@ export const ArticlesList = ({ onArticleSelect }) => {
     }
   };
 
-  const handleViewComments = (articleId) => {
-    if (onArticleSelect) {
-      onArticleSelect(articleId);
-    }
-  };
-
   let content;
 
+  // Handle loading states
   if (status === 'loading') {
     content = <h1>Loading...</h1>;
   } else if (status === 'succeeded') {
     content = articles.length > 0 ? (
-      articles.map((article) => (
-        <ArticleExcerpt 
-          key={article.article_id} 
-          article={article} 
-          onViewComments={handleViewComments}
-        />
-      ))
+      articles.map((article) => <ArticleExcerpt key={article.article_id} article={article} />)
     ) : (
       <div>No articles available.</div>
     );
@@ -179,6 +155,7 @@ export const ArticlesList = ({ onArticleSelect }) => {
   return (
     <article className="articles-list">
       <h1>Articles</h1>
+      {/* Add Cleanup Button */}
       <button className="button-cleanup" onClick={handleCleanup}>
         Clean Up Unused Images
       </button>
@@ -198,4 +175,4 @@ export const ArticlesList = ({ onArticleSelect }) => {
       {content}
     </article>
   );
-};
+};  
