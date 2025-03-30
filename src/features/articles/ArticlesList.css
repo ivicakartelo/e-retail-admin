@@ -1,9 +1,7 @@
-/* src/features/articles/ArticlesList.css */
-
 /* Container for the articles list */
 .articles-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
   padding: 20px;
 }
@@ -14,12 +12,12 @@
   border-radius: 8px;
   padding: 20px;
   background-color: #fff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow effect */
-  transition: transform 0.2s ease; /* Smooth hover effect */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
 }
 
 .article-excerpt:hover {
-  transform: translateY(-2px); /* Lift effect on hover */
+  transform: translateY(-2px);
 }
 
 /* Article heading styling */
@@ -65,38 +63,38 @@
 
 /* Add Article button styling */
 .button-add-article {
-  background-color: #4caf50; /* Green background */
+  background-color: #4caf50;
   color: white;
 }
 
 /* Update button styling */
 .button-update {
-  background-color: #3498db; /* Blue background */
+  background-color: #3498db;
   color: #fff;
 }
 
 /* Delete button styling */
 .button-delete,
 .button-remove {
-  background-color: #e74c3c; /* Red background */
+  background-color: #e74c3c;
   color: #fff;
 }
 
 .button-remove:hover,
 .button-delete:hover {
-  background-color: #c0392b; /* Darker red on hover */
-  transform: scale(1.05); /* Slight zoom effect */
+  background-color: #c0392b;
+  transform: scale(1.05);
 }
 
 .button-remove:focus,
 .button-delete:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.5); /* Red focus ring */
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.5);
 }
 
 /* Assign Categories button styling */
 .button-assign {
-  background-color: #2ecc71; /* Green background */
+  background-color: #2ecc71;
   color: #fff;
 }
 
@@ -110,40 +108,39 @@
 
 /* Base styles for the Add Article button */
 .button-add-article {
-  background-color: #2ecc71; /* Green background for "Add Article" */
-  color: white; /* White text */
+  background-color: #2ecc71;
+  color: white;
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease; /* Smooth background color transition */
+  transition: background-color 0.3s ease;
 }
 
 /* Hover effect for the Add Article button */
 .button-add-article:hover {
-  background-color: #27ae60; /* Darker green on hover */
+  background-color: #27ae60;
 }
 
 /* Styles for the Cancel button */
 .button-cancel {
-  background-color: #e74c3c; /* Red background for "Cancel" */
-  color: white; /* White text */
+  background-color: #e74c3c;
+  color: white;
 }
 
 /* Hover effect for the Cancel button */
 .button-cancel:hover {
-  background-color: #c0392b; /* Darker red on hover */
+  background-color: #c0392b;
 }
-
 
 /* Mobile-first adjustments */
 @media (max-width: 600px) {
   .articles-list {
-    grid-template-columns: 1fr; /* Single column layout on mobile */
+    grid-template-columns: 1fr;
   }
 
   .article-excerpt {
-    padding: 15px; /* Slightly reduce padding on mobile */
+    padding: 15px;
   }
 
   .button-update,
@@ -151,8 +148,8 @@
   .button-remove,
   .button-assign,
   .button-add-article {
-    font-size: 14px; /* Smaller button text on mobile */
-    padding: 8px 12px; /* Smaller padding on buttons */
+    font-size: 14px;
+    padding: 8px 12px;
   }
 }
 
@@ -169,4 +166,29 @@
 
 .button-cleanup:hover {
   background-color: #cc0000;
+}
+
+/* Add this to ArticlesList.css */
+.button-comments {
+  background-color: #9b59b6; /* Purple background */
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-right: 10px;
+}
+
+.button-comments:hover {
+  background-color: #8e44ad; /* Darker purple on hover */
+  transform: scale(1.05);
+}
+
+@media (max-width: 600px) {
+  .button-comments {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
 }
