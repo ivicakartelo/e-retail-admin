@@ -7,6 +7,15 @@ const initialState = {
   error: null
 };
 
+export const fetchPendingComments = createAsyncThunk(
+  'comments/fetchPendingComments',
+  async () => {
+    const response = await axios.get('http://localhost:5000/admin/comments/pending');
+    return response.data;
+  }
+);
+
+
 export const fetchComments = createAsyncThunk(
   'comments/fetchComments',
   async (articleId) => {
@@ -66,6 +75,17 @@ const commentsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+    .addCase(fetchPendingComments.pending, (state) => {
+      state.status = 'loading';
+    })
+    .addCase(fetchPendingComments.fulfilled, (state, action) => {
+      state.status = 'succeeded';
+      state.comments = action.payload;
+    })
+    .addCase(fetchPendingComments.rejected, (state, action) => {
+      state.status = 'failed';
+      state.error = action.error.message;
+    })
       .addCase(fetchComments.pending, (state) => {
         state.status = 'loading';
       })

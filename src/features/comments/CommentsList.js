@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchComments, deleteComment, approveComment } from './commentsSlice';
+import { fetchPendingComments, deleteComment, approveComment } from './commentsSlice';
 import { AddCommentForm } from './AddCommentForm';
 import { UpdateCommentForm } from './UpdateCommentForm';
 import './CommentsList.css';
@@ -87,8 +87,8 @@ export const CommentsList = ({ articleId }) => {
   const addCommentFormRef = useRef(null);
 
   useEffect(() => {
-    dispatch(fetchComments(articleId));
-  }, [articleId, dispatch]);
+    dispatch(fetchPendingComments());
+  }, [dispatch]);
 
   useEffect(() => {
     if (showAddCommentForm && addCommentFormRef.current) {
