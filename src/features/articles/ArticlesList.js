@@ -1,15 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchArticles, handleDelete, cleanupImages } from './articlesSlice';
-import { fetchPendingCommentsForArticle } from '../comments/commentsSlice'; // Updated to the new thunk
+import { fetchPendingCommentsForArticle } from '../comments/commentsSlice';
+import { CommentsList } from '../comments/CommentsList'; // 👈 Don't forget to import this
 import { AddArticleForm } from './AddArticleForm';
 import { UpdateArticleForm } from './UpdateArticleForm';
 import RemoveCategoryForm from './RemoveCategoryForm';
 import AssignNewCategoryForm from './AssignNewCategoryForm';
 import './ArticlesList.css';
 
-const ArticleExcerpt = ({ article, onViewComments }) => {
+const ArticleExcerpt = ({ article }) => {
   const [visibleForm, setVisibleForm] = useState(null);
+  const [showComments, setShowComments] = useState(false);
   const formRefs = {
     update: useRef(null),
     removeCategory: useRef(null),
@@ -22,6 +24,13 @@ const ArticleExcerpt = ({ article, onViewComments }) => {
     if (window.confirm('Are you sure you want to delete this article?')) {
       dispatch(handleDelete(id));
     }
+  };
+
+  const handleViewCommentsClick = () => {
+    if (!showComments) {
+      dispatch(fetchPendingCommentsForArticle(article.article_id));
+    }
+    setShowComments(!showComments);
   };
 
   useEffect(() => {
@@ -60,7 +69,9 @@ const ArticleExcerpt = ({ article, onViewComments }) => {
           <button onClick={() => handleDeleteClick(article.article_id)} className="button-delete">Delete</button>
           <button onClick={() => setVisibleForm('removeCategory')} className="button-remove">Remove Categories</button>
           <button onClick={() => setVisibleForm('assignCategory')} className="button-assign">Assign Categories</button>
-          <button onClick={() => onViewComments(article.article_id)} className="button-comments">View Comments</button>
+          <button onClick={handleViewCommentsClick} className="button-comments">
+            {showComments ? 'Hide Comments' : 'View Comments'}
+          </button>
         </div>
       )}
 
@@ -74,12 +85,18 @@ const ArticleExcerpt = ({ article, onViewComments }) => {
           <AssignNewCategoryForm article={article} setShowAssignCategoryForm={() => setVisibleForm(null)} />
         </div>
       )}
+
+      {showComments && (
+        <div style={{ marginTop: '1rem' }}>
+          <h4>Pending Comments</h4>
+          <CommentsList articleId={article.article_id} />
+        </div>
+      )}
     </article>
   );
 };
 
-export const ArticlesList = ({ onArticleSelect }) => {
-  console.log("ArticlesList rendered")
+export const ArticlesList = () => {
   const dispatch = useDispatch();
   const { articles, status, error } = useSelector(state => state.articles);
   const [showAddArticleForm, setShowAddArticleForm] = useState(false);
@@ -90,11 +107,6 @@ export const ArticlesList = ({ onArticleSelect }) => {
       dispatch(fetchArticles());
     }
   }, [status, dispatch]);
-
-  const handleViewComments = (articleId) => {
-    console.log("Fetching pending comments for article", articleId);
-    dispatch(fetchPendingCommentsForArticle(articleId)); // Dispatch the new thunk to fetch pending comments
-  };
 
   useEffect(() => {
     if (showAddArticleForm) {
@@ -128,9 +140,11 @@ export const ArticlesList = ({ onArticleSelect }) => {
       {status === 'loading' && <h1>Loading...</h1>}
       {status === 'failed' && <div className="error-message">Error: {error}</div>}
       {status === 'succeeded' && (
-        articles.length > 0 ? articles.map((article) => (
-          <ArticleExcerpt key={article.article_id} article={article} onViewComments={handleViewComments} />
-        )) : <div>No articles available.</div>
+        articles.length > 0
+          ? articles.map((article) => (
+              <ArticleExcerpt key={article.article_id} article={article} />
+            ))
+          : <div>No articles available.</div>
       )}
     </article>
   );

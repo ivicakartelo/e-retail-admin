@@ -1,6 +1,11 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchPendingCommentsForArticle, approveComment, deleteComment } from './commentsSlice'; // Updated import
+import {
+  fetchPendingComments,
+  fetchPendingCommentsForArticle,
+  approveComment,
+  deleteComment,
+} from './commentsSlice';
 import './CommentsList.css';
 
 const CommentExcerpt = ({ comment, onApprove, onDelete }) => {
@@ -24,17 +29,11 @@ const CommentExcerpt = ({ comment, onApprove, onDelete }) => {
         </span>
         <div className="comment-actions">
           {!comment.is_approved && (
-            <button
-              className="approve-btn"
-              onClick={() => onApprove(comment)}
-            >
+            <button className="approve-btn" onClick={() => onApprove(comment)}>
               ✅ Approve
             </button>
           )}
-          <button
-            className="delete-btn"
-            onClick={() => onDelete(comment)}
-          >
+          <button className="delete-btn" onClick={() => onDelete(comment)}>
             ❌ Delete
           </button>
         </div>
@@ -43,47 +42,54 @@ const CommentExcerpt = ({ comment, onApprove, onDelete }) => {
   );
 };
 
-export const CommentsList = ({ articleId }) => {
-  console.log("CommentsList rendered");
-
+export const CommentsList = ({ mode = 'admin', articleId = null }) => {
   const dispatch = useDispatch();
-  const comments = useSelector((state) => state.comments.comments);
-  const status = useSelector((state) => state.comments.status);
-  const error = useSelector((state) => state.comments.error);
+  const { comments, status, error } = useSelector((state) => state.comments);
 
+  // Fetch pending comments based on mode
   useEffect(() => {
     if (status === 'idle') {
-      dispatch(fetchPendingCommentsForArticle(articleId)); // Fetch comments for this specific article
+      if (mode === 'admin') {
+        dispatch(fetchPendingComments()); // Fetch all pending comments
+      } else if (mode === 'article' && articleId) {
+        dispatch(fetchPendingCommentsForArticle(articleId)); // Fetch pending comments for a specific article
+      }
     }
-  }, [status, dispatch, articleId]);
+  }, [dispatch, status, mode, articleId]);
 
+  // Function to refresh comments after actions (approve/delete)
+  const refreshComments = () => {
+    if (mode === 'admin') {
+      dispatch(fetchPendingComments());
+    } else if (mode === 'article' && articleId) {
+      dispatch(fetchPendingCommentsForArticle(articleId));
+    }
+  };
+
+  // Handle comment approval
   const handleApprove = (comment) => {
-    console.log("Dispatching approveComment", comment);
-    dispatch(approveComment({ 
-      articleId: comment.article_id, 
-      commentId: comment.comment_id 
-    })).then(() => {
-      dispatch(fetchPendingCommentsForArticle(articleId)); // Refresh the list after approving
-    });
+    dispatch(approveComment({
+      articleId: comment.article_id,
+      commentId: comment.comment_id
+    })).then(() => refreshComments());
   };
 
+  // Handle comment deletion
   const handleDelete = (comment) => {
-    console.log("Dispatching deleteComment", comment);
-    dispatch(deleteComment({ 
-      articleId: comment.article_id, 
-      commentId: comment.comment_id 
-    })).then(() => {
-      dispatch(fetchPendingCommentsForArticle(articleId)); // Refresh the list after deleting
-    });
+    dispatch(deleteComment({
+      articleId: comment.article_id,
+      commentId: comment.comment_id
+    })).then(() => refreshComments());
   };
 
+  // Render content based on status and available comments
   let content;
   if (status === 'loading') {
     content = <div className="loading">Loading comments...</div>;
   } else if (status === 'failed') {
     content = <div className="error">Error: {error}</div>;
-  } else if (comments.length === 0) {
-    content = <div className="no-comments">No comments yet</div>;
+  } else if (!comments.length) {
+    content = <div className="no-comments">No comments to display.</div>;
   } else {
     content = comments.map((comment) => (
       <CommentExcerpt
@@ -97,10 +103,10 @@ export const CommentsList = ({ articleId }) => {
 
   return (
     <section className="comments-container">
-      <h3>Pending Comments ({comments.length})</h3>
-      <div className="comments-list">
-        {content}
-      </div>
+      <h3>
+        {mode === 'admin' ? 'All Pending Comments' : `Pending Comments for Article #${articleId}`}
+      </h3>
+      <div className="comments-list">{content}</div>
     </section>
   );
 };
