@@ -1,35 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchPendingComments, deleteComment, approveComment } from './commentsSlice';
-import { AddCommentForm } from './AddCommentForm';
-import { UpdateCommentForm } from './UpdateCommentForm';
+import { fetchPendingCommentsForArticle, approveComment, deleteComment } from './commentsSlice'; // Updated import
 import './CommentsList.css';
 
-const CommentExcerpt = ({ comment, articleId }) => {
-  const [showEditForm, setShowEditForm] = useState(false);
-  const editFormRef = useRef(null);
-  const dispatch = useDispatch();
-
-  const handleUpdate = () => {
-    setShowEditForm(true);
-  };
-
-  const handleApprove = () => {
-    dispatch(approveComment({ articleId, commentId: comment.comment_id }));
-  };
-
-  const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this comment?')) {
-      dispatch(deleteComment({ articleId, commentId: comment.comment_id }));
-    }
-  };
-
-  useEffect(() => {
-    if (showEditForm && editFormRef.current) {
-      editFormRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [showEditForm]);
-
+const CommentExcerpt = ({ comment, onApprove, onDelete }) => {
   return (
     <div className={`comment-card ${!comment.is_approved ? 'pending' : ''}`}>
       <div className="comment-header">
@@ -48,56 +22,62 @@ const CommentExcerpt = ({ comment, articleId }) => {
           {new Date(comment.created_at).toLocaleString()}
           {comment.updated_at && ` (edited)`}
         </span>
-        
-        {showEditForm ? (
-          <div ref={editFormRef}>
-            <UpdateCommentForm 
-              comment={comment} 
-              articleId={articleId}
-              setShowEditForm={setShowEditForm} 
-            />
-          </div>
-        ) : (
-          <div className="comment-actions">
-            <button onClick={handleUpdate} className="button-update">
-              Edit
+        <div className="comment-actions">
+          {!comment.is_approved && (
+            <button
+              className="approve-btn"
+              onClick={() => onApprove(comment)}
+            >
+              ✅ Approve
             </button>
-            <button onClick={handleDelete} className="button-delete">
-              Delete
-            </button>
-            {!comment.is_approved && (
-              <button onClick={handleApprove} className="button-approve">
-                Approve
-              </button>
-            )}
-          </div>
-        )}
+          )}
+          <button
+            className="delete-btn"
+            onClick={() => onDelete(comment)}
+          >
+            ❌ Delete
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 export const CommentsList = ({ articleId }) => {
+  console.log("CommentsList rendered");
+
   const dispatch = useDispatch();
   const comments = useSelector((state) => state.comments.comments);
   const status = useSelector((state) => state.comments.status);
   const error = useSelector((state) => state.comments.error);
 
-  const [showAddCommentForm, setShowAddCommentForm] = useState(false);
-  const addCommentFormRef = useRef(null);
-
   useEffect(() => {
-    dispatch(fetchPendingComments());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (showAddCommentForm && addCommentFormRef.current) {
-      addCommentFormRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (status === 'idle') {
+      dispatch(fetchPendingCommentsForArticle(articleId)); // Fetch comments for this specific article
     }
-  }, [showAddCommentForm]);
+  }, [status, dispatch, articleId]);
+
+  const handleApprove = (comment) => {
+    console.log("Dispatching approveComment", comment);
+    dispatch(approveComment({ 
+      articleId: comment.article_id, 
+      commentId: comment.comment_id 
+    })).then(() => {
+      dispatch(fetchPendingCommentsForArticle(articleId)); // Refresh the list after approving
+    });
+  };
+
+  const handleDelete = (comment) => {
+    console.log("Dispatching deleteComment", comment);
+    dispatch(deleteComment({ 
+      articleId: comment.article_id, 
+      commentId: comment.comment_id 
+    })).then(() => {
+      dispatch(fetchPendingCommentsForArticle(articleId)); // Refresh the list after deleting
+    });
+  };
 
   let content;
-
   if (status === 'loading') {
     content = <div className="loading">Loading comments...</div>;
   } else if (status === 'failed') {
@@ -106,31 +86,18 @@ export const CommentsList = ({ articleId }) => {
     content = <div className="no-comments">No comments yet</div>;
   } else {
     content = comments.map((comment) => (
-      <CommentExcerpt 
-        key={comment.comment_id} 
-        comment={comment} 
-        articleId={articleId}
+      <CommentExcerpt
+        key={comment.comment_id}
+        comment={comment}
+        onApprove={handleApprove}
+        onDelete={handleDelete}
       />
     ));
   }
 
   return (
     <section className="comments-container">
-      <h3>Comments ({comments.length})</h3>
-      
-      <button 
-        onClick={() => setShowAddCommentForm(!showAddCommentForm)}
-        className="add-comment-button"
-      >
-        {showAddCommentForm ? 'Cancel' : 'Add Comment'}
-      </button>
-      
-      {showAddCommentForm && (
-        <div ref={addCommentFormRef}>
-          <AddCommentForm articleId={articleId} />
-        </div>
-      )}
-      
+      <h3>Pending Comments ({comments.length})</h3>
       <div className="comments-list">
         {content}
       </div>

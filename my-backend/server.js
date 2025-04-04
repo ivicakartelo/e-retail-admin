@@ -1219,19 +1219,47 @@ app.delete('/articles/:articleId/comments/:commentId', async (req, res) => {
   }
 });
 
-// Admin endpoint to get all pending comments
 app.get('/admin/comments/pending', async (req, res) => {
   try {
-    const [comments] = await db.promise().query(`
+    const query = `
       SELECT c.*, u.name as user_name, a.name as article_name
       FROM article_comments c
       JOIN users u ON c.user_id = u.user_id
       JOIN article a ON c.article_id = a.article_id
       WHERE c.is_approved = 0 AND c.deleted_at IS NULL
       ORDER BY c.created_at DESC
-    `);
-    
+    `;
+
+    const [comments] = await db.promise().query(query);
+
     res.status(200).json(comments);
+  } catch (error) {
+    console.error('Error fetching pending comments:', error);
+    res.status(500).json({ error: 'Failed to fetch pending comments' });
+  }
+});
+
+// GET pending comments for a specific article
+app.get('/admin/comments/pending/:article_id', async (req, res) => {
+  const { article_id } = req.params;  // Extract article_id from the request parameters
+
+  try {
+    const query = `
+      SELECT c.*, u.name as user_name, a.name as article_name
+      FROM article_comments c
+      JOIN users u ON c.user_id = u.user_id
+      JOIN article a ON c.article_id = a.article_id
+      WHERE c.is_approved = 0 AND c.article_id = ? AND c.deleted_at IS NULL
+      ORDER BY c.created_at DESC
+    `;
+
+    const [comments] = await db.promise().query(query, [article_id]);
+
+    if (comments.length === 0) {
+      return res.status(404).json({ message: 'No pending comments found for this article' });
+    }
+
+    res.status(200).json(comments);  // Return the list of pending comments
   } catch (error) {
     console.error('Error fetching pending comments:', error);
     res.status(500).json({ error: 'Failed to fetch pending comments' });
