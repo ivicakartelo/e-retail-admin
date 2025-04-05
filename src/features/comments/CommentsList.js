@@ -8,7 +8,7 @@ import {
 } from './commentsSlice';
 import './CommentsList.css';
 
-const CommentExcerpt = ({ comment, onApprove, onDelete }) => {
+const CommentExcerpt = ({ comment, handleApprove, handleDelete }) => {
   return (
     <div className={`comment-card ${!comment.is_approved ? 'pending' : ''}`}>
       <div className="comment-header">
@@ -29,11 +29,17 @@ const CommentExcerpt = ({ comment, onApprove, onDelete }) => {
         </span>
         <div className="comment-actions">
           {!comment.is_approved && (
-            <button className="approve-btn" onClick={() => onApprove(comment)}>
+            <button
+              className="approve-btn"
+              onClick={() => handleApprove(comment)}
+            >
               ✅ Approve
             </button>
           )}
-          <button className="delete-btn" onClick={() => onDelete(comment)}>
+          <button
+            className="delete-btn"
+            onClick={() => handleDelete(comment)}
+          >
             ❌ Delete
           </button>
         </div>
@@ -46,18 +52,16 @@ export const CommentsList = ({ mode = 'admin', articleId = null }) => {
   const dispatch = useDispatch();
   const { comments, status, error } = useSelector((state) => state.comments);
 
-  // Fetch pending comments based on mode
   useEffect(() => {
     if (status === 'idle') {
       if (mode === 'admin') {
-        dispatch(fetchPendingComments()); // Fetch all pending comments
+        dispatch(fetchPendingComments());
       } else if (mode === 'article' && articleId) {
-        dispatch(fetchPendingCommentsForArticle(articleId)); // Fetch pending comments for a specific article
+        dispatch(fetchPendingCommentsForArticle(articleId));
       }
     }
   }, [dispatch, status, mode, articleId]);
 
-  // Function to refresh comments after actions (approve/delete)
   const refreshComments = () => {
     if (mode === 'admin') {
       dispatch(fetchPendingComments());
@@ -66,23 +70,20 @@ export const CommentsList = ({ mode = 'admin', articleId = null }) => {
     }
   };
 
-  // Handle comment approval
   const handleApprove = (comment) => {
     dispatch(approveComment({
       articleId: comment.article_id,
-      commentId: comment.comment_id
+      commentId: comment.comment_id,
     })).then(() => refreshComments());
   };
 
-  // Handle comment deletion
   const handleDelete = (comment) => {
     dispatch(deleteComment({
       articleId: comment.article_id,
-      commentId: comment.comment_id
+      commentId: comment.comment_id,
     })).then(() => refreshComments());
   };
 
-  // Render content based on status and available comments
   let content;
   if (status === 'loading') {
     content = <div className="loading">Loading comments...</div>;
@@ -95,8 +96,8 @@ export const CommentsList = ({ mode = 'admin', articleId = null }) => {
       <CommentExcerpt
         key={comment.comment_id}
         comment={comment}
-        onApprove={handleApprove}
-        onDelete={handleDelete}
+        handleApprove={handleApprove}
+        handleDelete={handleDelete}
       />
     ));
   }
@@ -104,7 +105,9 @@ export const CommentsList = ({ mode = 'admin', articleId = null }) => {
   return (
     <section className="comments-container">
       <h3>
-        {mode === 'admin' ? 'All Pending Comments' : `Pending Comments for Article #${articleId}`}
+        {mode === 'admin'
+          ? 'All Pending Comments'
+          : `Pending Comments for Article #${articleId}`}
       </h3>
       <div className="comments-list">{content}</div>
     </section>
