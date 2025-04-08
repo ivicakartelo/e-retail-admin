@@ -5,7 +5,7 @@ import { ArticlesList } from './features/articles/ArticlesList';
 import { UsersList } from './features/users/UsersList';
 import { OrdersList } from './features/orders/OrdersList';
 import { OrderItemsList } from './features/orderitems/OrderItemsList';
-import { CommentsList } from './features/comments/CommentsList';
+import { PendingCommentsList } from './features/comments/PendingCommentsList';
 import './App.css';
 
 const Sidebar = ({ activeTab, onTabClick, sidebarOpen, toggleSidebar }) => (
@@ -16,7 +16,7 @@ const Sidebar = ({ activeTab, onTabClick, sidebarOpen, toggleSidebar }) => (
         <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
             <h2>Admin Panel</h2>
             <ul>
-                {['Departments', 'Categories', 'Articles', 'Users', 'Orders', 'OrderItems', 'Comments'].map((tab) => (
+                {['Departments', 'Categories', 'Articles', 'Users', 'Orders', 'OrderItems', 'PendingComments'].map((tab) => (
                     <li
                         key={tab}
                         onClick={() => onTabClick(tab)}
@@ -51,7 +51,7 @@ const App = () => {
             case 'Users': return <UsersList />;
             case 'Orders': return <OrdersList />;
             case 'OrderItems': return <OrderItemsList />;
-            case 'Comments': return <CommentsList />;
+            case 'PendingComments': return <PendingCommentsList />;
             default: return <DepartmentsList />;
         }
     };

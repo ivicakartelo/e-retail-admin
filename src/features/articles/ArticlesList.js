@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchArticles, handleDelete, cleanupImages } from './articlesSlice';
-import { fetchPendingCommentsForArticle } from '../comments/commentsSlice';
-import { CommentsList } from '../comments/CommentsList'; // 👈 Don't forget to import this
+import { fetchPendingCommentsByArticle } from '../comments/pendingCommentsArticleSlice';
+import { PendingCommentsArticleList } from '../comments/PendingCommentsArticleList';
 import { AddArticleForm } from './AddArticleForm';
 import { UpdateArticleForm } from './UpdateArticleForm';
 import RemoveCategoryForm from './RemoveCategoryForm';
@@ -28,7 +28,7 @@ const ArticleExcerpt = ({ article }) => {
 
   const handleViewCommentsClick = () => {
     if (!showComments) {
-      dispatch(fetchPendingCommentsForArticle(article.article_id));
+      dispatch(fetchPendingCommentsByArticle(article.article_id));
     }
     setShowComments(!showComments);
   };
@@ -89,7 +89,7 @@ const ArticleExcerpt = ({ article }) => {
       {showComments && (
         <div style={{ marginTop: '1rem' }}>
           <h4>Pending Comments</h4>
-          <CommentsList articleId={article.article_id} />
+          <PendingCommentsArticleList articleId={article.article_id} />
         </div>
       )}
     </article>

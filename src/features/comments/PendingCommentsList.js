@@ -1,12 +1,8 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import {
-  fetchPendingComments,
-  fetchPendingCommentsForArticle,
-  approveComment,
-  deleteComment,
-} from './commentsSlice';
+import { fetchPendingComments } from './pendingCommentsSlice'; // new slice
 import './CommentsList.css';
+import axios from 'axios';
 
 const CommentExcerpt = ({ comment, handleApprove, handleDelete }) => {
   return (
@@ -48,40 +44,42 @@ const CommentExcerpt = ({ comment, handleApprove, handleDelete }) => {
   );
 };
 
-export const CommentsList = ({ mode = 'admin', articleId = null }) => {
+export const PendingCommentsList = () => {
   const dispatch = useDispatch();
-  const { comments, status, error } = useSelector((state) => state.comments);
+  const { items: comments, status, error } = useSelector((state) => state.pendingComments);
 
   useEffect(() => {
     if (status === 'idle') {
-      if (mode === 'admin') {
-        dispatch(fetchPendingComments());
-      } else if (mode === 'article' && articleId) {
-        dispatch(fetchPendingCommentsForArticle(articleId));
-      }
+      dispatch(fetchPendingComments());
     }
-  }, [dispatch, status, mode, articleId]);
+  }, [dispatch, status]);
 
   const refreshComments = () => {
-    if (mode === 'admin') {
-      dispatch(fetchPendingComments());
-    } else if (mode === 'article' && articleId) {
-      dispatch(fetchPendingCommentsForArticle(articleId));
+    dispatch(fetchPendingComments());
+  };
+
+  const handleApprove = async (comment) => {
+    try {
+      await axios.patch(
+        `http://localhost:5000/articles/${comment.article_id}/comments/${comment.comment_id}/approve`,
+        { approved: true }
+      );
+      refreshComments();
+    } catch (error) {
+      console.error("Failed to approve comment:", error);
     }
   };
+  
 
-  const handleApprove = (comment) => {
-    dispatch(approveComment({
-      articleId: comment.article_id,
-      commentId: comment.comment_id,
-    })).then(() => refreshComments());
-  };
-
-  const handleDelete = (comment) => {
-    dispatch(deleteComment({
-      articleId: comment.article_id,
-      commentId: comment.comment_id,
-    })).then(() => refreshComments());
+  const handleDelete = async (comment) => {
+    try {
+      await axios.delete(
+        `http://localhost:5000/articles/${comment.article_id}/comments/${comment.comment_id}`
+      );
+      refreshComments();
+    } catch (error) {
+      console.error("Failed to delete comment:", error);
+    }
   };
 
   let content;
@@ -104,11 +102,7 @@ export const CommentsList = ({ mode = 'admin', articleId = null }) => {
 
   return (
     <section className="comments-container">
-      <h3>
-        {mode === 'admin'
-          ? 'All Pending Comments'
-          : `Pending Comments for Article #${articleId}`}
-      </h3>
+      <h3>All Pending Comments</h3>
       <div className="comments-list">{content}</div>
     </section>
   );
