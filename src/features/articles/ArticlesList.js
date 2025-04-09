@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo  } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchArticles, handleDelete, cleanupImages } from './articlesSlice';
 import { fetchPendingCommentsByArticle } from '../comments/pendingCommentsArticleSlice';
@@ -12,11 +12,16 @@ import './ArticlesList.css';
 const ArticleExcerpt = ({ article }) => {
   const [visibleForm, setVisibleForm] = useState(null);
   const [showComments, setShowComments] = useState(false);
-  const formRefs = {
-    update: useRef(null),
-    removeCategory: useRef(null),
-    assignCategory: useRef(null)
-  };
+  
+  const updateRef = useRef(null);
+  const removeCategoryRef = useRef(null);
+  const assignCategoryRef = useRef(null);
+
+  const formRefs = useMemo(() => ({
+  update: updateRef,
+  removeCategory: removeCategoryRef,
+  assignCategory: assignCategoryRef
+}), []);
 
   const dispatch = useDispatch();
 
@@ -37,7 +42,7 @@ const ArticleExcerpt = ({ article }) => {
     if (visibleForm && formRefs[visibleForm]?.current) {
       formRefs[visibleForm].current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [visibleForm]);
+  }, [visibleForm, formRefs]);
 
   return (
     <article className="article-excerpt">
