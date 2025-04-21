@@ -48,7 +48,7 @@ const ArticleExcerpt = ({ article }) => {
     <article className="article-excerpt">
       <h2>{article.name}</h2>
       <p><strong>ID:</strong> {article.article_id}</p>
-      <p>{article.description}</p>
+      <div dangerouslySetInnerHTML={{ __html: article.description }} />
       <p><strong>Price:</strong> {article.price ? `$${Number(article.price).toFixed(2)}` : 'N/A'}</p>
 
       <div className="article-images">

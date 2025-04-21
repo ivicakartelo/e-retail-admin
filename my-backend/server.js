@@ -1150,3 +1150,50 @@ app.get('/comments/pending/:article_id', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch pending comments' });
   }
 });
+
+app.post('/api/improve-description', async (req, res) => {
+  const { description } = req.body;
+
+  try {
+    console.log('Received description:', description); // Log the incoming description
+
+    // Send the description to the AI model for improvement
+    const improvedDescription = await model.generateContent(
+      `Please improve the following article description.
+  Make the content more engaging, clear, and professional.
+  Format the output with proper HTML structure using tags such as:
+  <h1>, <h2>, <p>, <strong>, <ul>, <li>, <em>, etc., where appropriate.
+  Preserve the original intent and topic of the description.
+  
+  Input: 
+      ${description}`);
+
+    console.log('Generated improved description:', improvedDescription); // Log the response from the model
+
+    // Log the candidates to inspect their structure
+    console.log('Candidates:', improvedDescription.response.candidates);
+
+    if (improvedDescription && improvedDescription.response && improvedDescription.response.candidates && improvedDescription.response.candidates.length > 0) {
+      // Access the first candidate object
+      const candidate = improvedDescription.response.candidates[0];
+      console.log('First candidate:', candidate);
+
+      if (candidate && candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+        // Extract the improved description from the 'parts' array
+        const improvedDescriptionText = candidate.content.parts[0]; // Assuming the first part contains the description
+
+        console.log('Improved description text:', improvedDescriptionText); // Log the improved text
+
+        res.json({ updatedDescription: improvedDescriptionText });
+      } else {
+        throw new Error('No parts found in candidate content');
+      }
+    } else {
+      throw new Error('No improved description found');
+    }
+
+  } catch (error) {
+    console.error('Error improving description:', error); // Log the error details
+    res.status(500).send('Failed to improve description');
+  }
+});
