@@ -1197,3 +1197,48 @@ app.post('/api/improve-description', async (req, res) => {
     res.status(500).send('Failed to improve description');
   }
 });
+
+//Endpoint moderate-comments
+app.post('/api/moderate-comments', async (req, res) => {
+  try {
+    const [pendingComments] = await db.promise().query(
+      `SELECT * FROM article_comments WHERE is_approved = 0 AND deleted_at IS NULL`
+    );
+
+    if (!pendingComments.length) {
+      return res.json({ success: true, message: 'No comments to moderate.' });
+    }
+
+    //const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+    //const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+
+    for (const comment of pendingComments) {
+      const prompt = `You are a strict content moderation AI. Decide whether this comment should be kept or removed:
+Only respond with:
+- ALLOW
+- DELETE
+
+Comment: """${comment.comment_text}"""`;
+
+      const result = await model.generateContent(prompt);
+      const decision = result.response.text().trim().toUpperCase();
+
+      if (decision === 'ALLOW') {
+        await db.promise().query(
+          `UPDATE article_comments SET is_approved = 1 WHERE comment_id = ? AND deleted_at IS NULL`,
+          [comment.comment_id]
+        );
+      } else if (decision === 'DELETE') {
+        await db.promise().query(
+          `DELETE FROM article_comments WHERE comment_id = ? AND deleted_at IS NULL`,
+          [comment.comment_id]
+        );
+      }
+    }
+
+    res.json({ success: true, message: 'Moderation complete.', moderated: pendingComments.length });
+  } catch (error) {
+    console.error('AI moderation failed:', error);
+    res.status(500).json({ error: 'AI moderation failed' });
+  }
+});

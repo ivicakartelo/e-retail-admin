@@ -69,7 +69,6 @@ export const PendingCommentsList = () => {
       console.error("Failed to approve comment:", error);
     }
   };
-  
 
   const handleDelete = async (comment) => {
     try {
@@ -79,6 +78,15 @@ export const PendingCommentsList = () => {
       refreshComments();
     } catch (error) {
       console.error("Failed to delete comment:", error);
+    }
+  };
+
+  const handleAIModeration = async () => {
+    try {
+      await axios.post('http://localhost:5000/api/moderate-comments');
+      refreshComments(); // refresh list after AI finishes
+    } catch (error) {
+      console.error("AI moderation failed:", error);
     }
   };
 
@@ -103,6 +111,7 @@ export const PendingCommentsList = () => {
   return (
     <section className="comments-container">
       <h3>All Pending Comments</h3>
+      <button className="ai-btn" onClick={handleAIModeration}>🧠 AI Moderate</button>
       <div className="comments-list">{content}</div>
     </section>
   );
